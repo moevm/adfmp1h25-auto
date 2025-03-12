@@ -47,5 +47,13 @@ fun MyApp() {
 
     val surveyDataState = remember { mutableStateOf<SurveyData?>(null) }
 
-
+    Scaffold(
+        bottomBar = { BottomNavigationBar(navController, bottomNavItems) }
+    ) { innerPadding ->
+        NavHost(
+            navController = navController,
+            startDestination = Screen.Home.route,
+            modifier = Modifier.padding(innerPadding)
+        )
+    }
 }
