@@ -10,7 +10,7 @@ fun InfoDialog(onDismiss: () -> Unit) {
     AlertDialog(
         onDismissRequest = onDismiss,
         title = { Text("Авторы") },
-        text = { Text("") },
+        text = { Text("Насонов Ярослав\nИванов Артур\nПопандопуло Александр") },
         confirmButton = {
             TextButton(onClick = onDismiss) {
                 Text("Закрыть")
