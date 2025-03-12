@@ -24,5 +24,14 @@ fun MyApp() {
     val navController = rememberNavController()
     val bottomNavItems = listOf(Screen.Home, Screen.Reminders, Screen.Maintenance)
 
-
+    // Глобальные состояния
+    val remindersState = remember {
+        mutableStateOf(
+            listOf(
+                Reminder("Аккумулятор", "2025-03-10", "2025-04-01", "Аккумулятор не держит заряд, требуется проверка и возможная замена."),
+                Reminder("Низкий уровень масла", "2025-03-10", "2025-04-01", "Масло почти на минимуме – проверить утечки и долить масло."),
+                Reminder("Давление передней правой шины", "2025-03-10", "2025-04-01", "Давление в шине ниже нормы, необходимо проверить и подкачать шину.")
+            )
+        )
+    }
 }
