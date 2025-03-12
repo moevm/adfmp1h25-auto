@@ -34,4 +34,18 @@ fun MyApp() {
             )
         )
     }
+
+    val maintenanceLogsState = remember {
+        mutableStateOf(
+            listOf(
+                MaintenanceLog("Обслуживание коробки передач", "Замена", "2025-03-05", "10000"),
+                MaintenanceLog("Обслуживание дисков", "Покупка", "2025-03-06", "8000"),
+                MaintenanceLog("Обслуживание датчиков", "Замена", "2025-03-07", "3000")
+            )
+        )
+    }
+
+    val surveyDataState = remember { mutableStateOf<SurveyData?>(null) }
+
+
 }
