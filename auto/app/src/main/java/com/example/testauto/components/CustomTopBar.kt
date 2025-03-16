@@ -29,6 +29,17 @@ fun CustomTopBar(
     onProfileClick: () -> Unit
 ) {
     TopAppBar(
+        title = {
+            Box(modifier = Modifier.fillMaxWidth()) {
+                AsyncImage(
+                    model = R.drawable.logo,
+                    contentDescription = "Логотип",
+                    modifier = Modifier
+                        .align(Alignment.Center)
+                        .size(200.dp)
+                )
+            }
+        },
         navigationIcon = {
             if (showBackButton) {
                 Row {

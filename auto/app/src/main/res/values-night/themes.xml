@@ -1,16 +1,21 @@
-<resources xmlns:tools="http://schemas.android.com/tools">
-    <!-- Base application theme. -->
+<resources>
+    <!-- Базовая тема приложения -->
     <style name="Theme.TestAuto" parent="Theme.MaterialComponents.DayNight.DarkActionBar">
-        <!-- Primary brand color. -->
-        <item name="colorPrimary">@color/purple_200</item>
-        <item name="colorPrimaryVariant">@color/purple_700</item>
-        <item name="colorOnPrimary">@color/black</item>
-        <!-- Secondary brand color. -->
-        <item name="colorSecondary">@color/teal_200</item>
-        <item name="colorSecondaryVariant">@color/teal_200</item>
-        <item name="colorOnSecondary">@color/black</item>
-        <!-- Status bar color. -->
-        <item name="android:statusBarColor">?attr/colorPrimaryVariant</item>
-        <!-- Customize your theme here. -->
+        <!-- Основной цвет (заменяет purple_500) -->
+        <item name="colorPrimary">@color/main_color</item>
+        <!-- Вариант основного цвета -->
+        <item name="colorPrimaryVariant">@color/main_color</item>
+        <!-- Вторичный цвет -->
+        <item name="colorSecondary">@color/green</item>
+        <!-- Вариант вторичного цвета -->
+        <item name="colorSecondaryVariant">@color/green</item>
+        <!-- Цвет текста/иконок на основном цвете -->
+        <item name="android:textColorPrimary">@color/white</item>
+        <!-- Цвет текста/иконок на вторичном цвете -->
+        <item name="android:textColorSecondary">@color/white</item>
+        <!-- Фон приложения -->
+        <item name="android:colorBackground">@color/black</item>
+        <!-- Цвет текста/иконок на фоне -->
+        <item name="android:textColor">@color/white</item>
     </style>
 </resources>

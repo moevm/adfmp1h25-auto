@@ -9,7 +9,7 @@ android {
 
     defaultConfig {
         applicationId = "com.example.testauto"
-        minSdk = 24
+        minSdk = 26
         targetSdk = 35
         versionCode = 1
         versionName = "1.0"
@@ -52,10 +52,12 @@ dependencies {
 //    implementation ("androidx.compose.material:material-icons-extended:1.5.0")
     // Jetpack Compose dependencies
     implementation("androidx.compose.ui:ui:1.5.0")
+    implementation ("com.google.code.gson:gson:2.10.1")
     implementation("androidx.compose.material:material:1.5.0")
     implementation("androidx.compose.ui:ui-tooling-preview:1.5.0")
     debugImplementation("androidx.compose.ui:ui-tooling:1.5.0")
     implementation("androidx.activity:activity-compose:1.7.1")
+    implementation ("io.coil-kt:coil-compose:2.6.0")
 
     // Navigation Compose dependency
     implementation("androidx.navigation:navigation-compose:2.5.3")
