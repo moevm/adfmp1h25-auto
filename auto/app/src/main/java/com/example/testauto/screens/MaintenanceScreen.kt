@@ -377,5 +377,44 @@ fun MaintenanceScreen(
         }
     }
 
+    if (showDetailDialog && selectedLog != null) {
+        AlertDialog(
+            onDismissRequest = { showDetailDialog = false },
+            title = { Text(selectedLog!!.name) },
+            text = {
+                Column {
+                    Text("Тип работ: ${selectedLog!!.workType}", style = MaterialTheme.typography.body1)
+                    Spacer(modifier = Modifier.height(8.dp))
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.SpaceBetween
+                    ) {
+                        Text("Дата: ${selectedLog!!.date}", style = MaterialTheme.typography.body2)
+                        Text("Стоимость: ${selectedLog!!.cost} руб", style = MaterialTheme.typography.body2)
+                    }
+                }
+            },
+            buttons = {
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(8.dp),
+                    horizontalArrangement = Arrangement.SpaceBetween
+                ) {
+                    TextButton(
+                        onClick = {
+                            logsState.value = logsState.value.filter { it != selectedLog }
+                            showDetailDialog = false
+                        }
+                    ) {
+                        Text("Удалить", color = Color.Red)
+                    }
+                    TextButton(onClick = { showDetailDialog = false }) {
+                        Text("Закрыть", color = Color.Gray)
+                    }
+                }
+            }
+        )
+    }
 
 }
