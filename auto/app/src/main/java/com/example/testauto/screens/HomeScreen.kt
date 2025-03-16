@@ -73,7 +73,26 @@ fun HomeScreen(
                 ) {
                     Text("Всего напоминаний: ${reminders.size}", style = MaterialTheme.typography.h6)
                     Divider(color = Color.Gray, thickness = 1.dp)
-
+                    nearestReminder?.let {
+                        val daysLeft = ChronoUnit.DAYS.between(LocalDate.now(), LocalDate.parse(it.repairDate, formatter))
+                        if (daysLeft >= 0) {
+                            Text(
+                                "Ближайшее напоминание: ${it.title} через $daysLeft дней",
+                                color = Color.Red,
+                                style = MaterialTheme.typography.body1
+                            )
+                        } else {
+                            Text(
+                                "Срок напоминания ${it.title} истек ${-daysLeft} дней назад",
+                                color = Color.Red,
+                                style = MaterialTheme.typography.body1
+                            )
+                        }
+                    }
+                    Divider(color = Color.Gray, thickness = 1.dp)
+                    lastCheck?.let {
+                        Text("Последняя проверка: ${it.name}, ${it.workType} (Дата: ${it.date})")
+                    }
                 }
             }
             Spacer(modifier = Modifier.height(12.dp))
