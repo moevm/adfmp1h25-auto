@@ -91,6 +91,46 @@ fun MaintenanceScreen(
                 onBack = { navController.navigate("home") }
             )
         },
+        floatingActionButton = {
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 16.dp),
+                horizontalArrangement = Arrangement.SpaceBetween
+            ) {
+                Box(
+                    modifier = Modifier
+                        .padding(start = 32.dp)
+                        .background(Color(0xFF757575), RoundedCornerShape(4.dp))
+                        .clickable {
+                            filterWorkType = ""
+                            filterStartDate = ""
+                            filterEndDate = ""
+                            filterCost = 0f
+                        }
+                        .padding(horizontal = 16.dp, vertical = 8.dp)
+                ) {
+                    Text(text = "Сбросить", color = Color.White)
+                }
+                Box(
+                    modifier = Modifier
+                        .background(getColorFromResources(R.color.main_color), RoundedCornerShape(4.dp))
+                        .clickable { showFilterDialog = true }
+                        .padding(horizontal = 16.dp, vertical = 8.dp)
+                ) {
+                    Row(verticalAlignment = Alignment.CenterVertically) {
+                        Text(text = "Фильтр", color = Color.White)
+                        Spacer(modifier = Modifier.width(8.dp))
+                        Icon(
+                            imageVector = Icons.Default.Build,
+                            contentDescription = "Filter",
+                            tint = Color.White,
+                            modifier = Modifier.size(24.dp)
+                        )
+                    }
+                }
+            }
+        }
     ) { innerPadding ->
         Column(
             modifier = Modifier
