@@ -537,4 +537,109 @@ fun ReminderScreen(
             }
         )
     }
+    if (showFilterDialog) {
+        AlertDialog(
+            onDismissRequest = { showFilterDialog = false },
+            title = { Text("Фильтрация") },
+            text = {
+                Column {
+                    DateInputField(
+                        label = "Дата от",
+                        date = tempFilterStartDate,
+                        onDateSelected = { tempFilterStartDate = it }
+                    )
+                    Spacer(modifier = Modifier.height(8.dp))
+                    DateInputField(
+                        label = "Дата до",
+                        date = tempFilterEndDate,
+                        onDateSelected = { tempFilterEndDate = it }
+                    )
+                    Spacer(modifier = Modifier.height(8.dp))
+                    OutlinedTextField(
+                        value = tempFilterMinMileage,
+                        onValueChange = { newValue ->
+                            if (newValue.all { it.isDigit() } || newValue.isEmpty()) {
+                                tempFilterMinMileage = newValue
+                            }
+                        },
+                        label = { Text("Минимальный пробег (км)") },
+                        keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
+                        modifier = Modifier.fillMaxWidth(),
+                        colors = TextFieldDefaults.outlinedTextFieldColors(
+                            focusedBorderColor = Color(0xFF6495ED).copy(alpha = 0.7f),
+                            unfocusedBorderColor = Color(0xFF6495ED).copy(alpha = 0.7f),
+                            disabledBorderColor = Color(0xFF6495ED).copy(alpha = 0.7f),
+                            errorBorderColor = Color(0xFF6495ED).copy(alpha = 0.7f),
+                            focusedLabelColor = Color(0xFF6495ED).copy(alpha = 0.7f),
+                            unfocusedLabelColor = Color(0xFF6495ED).copy(alpha = 0.7f)
+                        )
+                    )
+                    Spacer(modifier = Modifier.height(8.dp))
+                    OutlinedTextField(
+                        value = tempFilterMaxMileage,
+                        onValueChange = { newValue ->
+                            if (newValue.all { it.isDigit() } || newValue.isEmpty()) {
+                                tempFilterMaxMileage = newValue
+                            }
+                        },
+                        label = { Text("Максимальный пробег (км)") },
+                        keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
+                        modifier = Modifier.fillMaxWidth(),
+                        colors = TextFieldDefaults.outlinedTextFieldColors(
+                            focusedBorderColor = Color(0xFF6495ED).copy(alpha = 0.7f),
+                            unfocusedBorderColor = Color(0xFF6495ED).copy(alpha = 0.7f),
+                            disabledBorderColor = Color(0xFF6495ED).copy(alpha = 0.7f),
+                            errorBorderColor = Color(0xFF6495ED).copy(alpha = 0.7f),
+                            focusedLabelColor = Color(0xFF6495ED).copy(alpha = 0.7f),
+                            unfocusedLabelColor = Color(0xFF6495ED).copy(alpha = 0.7f)
+                        )
+                    )
+                }
+            },
+            confirmButton = {
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(8.dp),
+                    horizontalArrangement = Arrangement.SpaceBetween
+                ) {
+                    Button(
+                        onClick = { showFilterDialog = false }, // "Назад" слева
+                        colors = ButtonDefaults.buttonColors(
+                            backgroundColor = Color(0xFF757575), // Нейтральный серый
+                            contentColor = Color.White
+                        ),
+                        elevation = ButtonDefaults.elevation(0.dp)
+                    ) {
+                        Text(
+                            text = "Назад",
+                            style = MaterialTheme.typography.button.copy(fontWeight = FontWeight.Bold),
+                            color = Color.White
+                        )
+                    }
+                    Button(
+                        onClick = {
+                            filterStartDate = tempFilterStartDate
+                            filterEndDate = tempFilterEndDate
+                            filterMinMileage = tempFilterMinMileage
+                            filterMaxMileage = tempFilterMaxMileage
+                            showFilterDialog = false
+                        }, // "Применить" справа
+                        colors = ButtonDefaults.buttonColors(
+                            backgroundColor = Color(0xFF4CAF50), // Мягкий зелёный
+                            contentColor = Color.White
+                        ),
+                        elevation = ButtonDefaults.elevation(0.dp)
+                    ) {
+                        Text(
+                            text = "Применить",
+                            style = MaterialTheme.typography.button.copy(fontWeight = FontWeight.Bold),
+                            color = Color.White
+                        )
+                    }
+                }
+            },
+            dismissButton = {},
+        )
+    }
 }
