@@ -61,6 +61,19 @@ fun MaintenanceScreen(
 
     val formatter = DateTimeFormatter.ofPattern("dd.MM.yyyy")
 
+    // Фильтрация
+    val filteredLogs = logsState.value.filter { log ->
+        val logDate = try { LocalDate.parse(log.date, formatter) } catch (e: Exception) { LocalDate.MIN }
+        val startDate = if (filterStartDate.isNotEmpty()) LocalDate.parse(filterStartDate, formatter) else LocalDate.MIN
+        val endDate = if (filterEndDate.isNotEmpty()) LocalDate.parse(filterEndDate, formatter) else LocalDate.MAX
+        val logCost = log.cost.filter { it.isDigit() || it == '.' }.toFloatOrNull() ?: 0f
+
+        (searchQuery.isEmpty() || log.name.contains(searchQuery, ignoreCase = true) || log.workType.contains(searchQuery, ignoreCase = true)) &&
+                (filterWorkType.isEmpty() || log.workType.contains(filterWorkType, ignoreCase = true)) &&
+                (logDate >= startDate && logDate <= endDate) &&
+                (filterCost == 0f || logCost <= filterCost)
+    }
+
     val scaffoldState = rememberScaffoldState()
     val scope = rememberCoroutineScope()
 
