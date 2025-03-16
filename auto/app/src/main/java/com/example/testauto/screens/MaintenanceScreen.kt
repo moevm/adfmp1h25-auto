@@ -138,6 +138,74 @@ fun MaintenanceScreen(
                 .padding(innerPadding)
                 .padding(16.dp)
         ) {
+            Column(modifier = Modifier.fillMaxWidth()) {
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Text(text = "Сортировка", style = MaterialTheme.typography.body1)
+                    Spacer(modifier = Modifier.width(8.dp))
+                    Row(
+                        modifier = Modifier
+                            .background(getColorFromResources(R.color.main_color), RoundedCornerShape(4.dp))
+                            .clickable {
+                                isDateAscending = !isDateAscending
+                                logsState.value = if (isDateAscending) {
+                                    filteredLogs.sortedBy { LocalDate.parse(it.date, formatter) }
+                                } else {
+                                    filteredLogs.sortedByDescending { LocalDate.parse(it.date, formatter) }
+                                }
+                            }
+                            .padding(horizontal = 8.dp, vertical = 4.dp),
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Text(text = "Дата", color = Color.White)
+                        Icon(
+                            imageVector = if (isDateAscending) Icons.Default.KeyboardArrowUp else Icons.Default.KeyboardArrowDown,
+                            contentDescription = "Sort Date",
+                            tint = Color.White,
+                            modifier = Modifier.size(20.dp)
+                        )
+                    }
+                    Spacer(modifier = Modifier.width(8.dp))
+                    Row(
+                        modifier = Modifier
+                            .background(getColorFromResources(R.color.main_color), RoundedCornerShape(4.dp))
+                            .clickable {
+                                isCostAscending = !isCostAscending
+                                logsState.value = if (isCostAscending) {
+                                    filteredLogs.sortedBy { it.cost.filter { it.isDigit() || it == '.' }.toFloatOrNull() ?: 0f }
+                                } else {
+                                    filteredLogs.sortedByDescending { it.cost.filter { it.isDigit() || it == '.' }.toFloatOrNull() ?: 0f }
+                                }
+                            }
+                            .padding(horizontal = 8.dp, vertical = 4.dp),
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Text(text = "Стоимость", color = Color.White)
+                        Icon(
+                            imageVector = if (isCostAscending) Icons.Default.KeyboardArrowUp else Icons.Default.KeyboardArrowDown,
+                            contentDescription = "Sort Cost",
+                            tint = Color.White,
+                            modifier = Modifier.size(20.dp)
+                        )
+                    }
+                }
+                Spacer(modifier = Modifier.height(8.dp))
+                OutlinedTextField(
+                    value = searchQuery,
+                    onValueChange = { searchQuery = it },
+                    placeholder = { Text(text = "Поиск", color = getColorFromResources(R.color.main_color)) },
+                    modifier = Modifier.fillMaxWidth(),
+                    colors = TextFieldDefaults.outlinedTextFieldColors(
+                        focusedBorderColor = getColorFromResources(R.color.main_color),
+                        unfocusedBorderColor = getColorFromResources(R.color.main_color),
+                        cursorColor = getColorFromResources(R.color.main_color),
+                        focusedLabelColor = Color.White,
+                        unfocusedLabelColor = Color.White
+                    )
+                )
+            }
             Spacer(modifier = Modifier.height(10.dp))
             LazyColumn {
                 items(filteredLogs) { log ->
