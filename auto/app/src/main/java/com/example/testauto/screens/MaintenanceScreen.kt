@@ -30,6 +30,7 @@ import java.time.LocalDate
 import java.time.format.DateTimeFormatter
 import kotlinx.coroutines.launch
 
+@OptIn(ExperimentalMaterialApi::class)
 @Composable
 fun MaintenanceScreen(
     navController: NavHostController,
@@ -208,6 +209,142 @@ fun MaintenanceScreen(
             }
             Spacer(modifier = Modifier.height(10.dp))
             LazyColumn {
+                if (showAddCard) {
+                    item {
+                        Card(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(vertical = 4.dp),
+                            elevation = 4.dp
+                        ) {
+                            Column(modifier = Modifier.padding(8.dp)) {
+                                var newName by remember { mutableStateOf("") }
+                                var newWorkType by remember { mutableStateOf("") }
+                                var newDate by remember { mutableStateOf("") }
+                                var newCost by remember { mutableStateOf("") }
+                                var expanded by remember { mutableStateOf(false) } // Для управления открытием/закрытием селектора
+
+                                // Список вариантов для селектора
+                                val workTypeOptions = listOf("замена", "покупка", "ремонт")
+
+                                OutlinedTextField(
+                                    value = newName,
+                                    onValueChange = { newName = it },
+                                    label = { Text("Название") },
+                                    modifier = Modifier.fillMaxWidth(),
+                                    colors = TextFieldDefaults.outlinedTextFieldColors(
+                                        focusedBorderColor = Color(0xFF4CAF50),
+                                        unfocusedBorderColor = Color.Gray,
+                                        focusedLabelColor = Color(0xFF4CAF50),
+                                        unfocusedLabelColor = Color.Gray
+                                    )
+                                )
+                                Spacer(modifier = Modifier.height(8.dp))
+
+                                // Селектор для типа работ
+                                Box(modifier = Modifier.fillMaxWidth()) {
+                                    ExposedDropdownMenuBox(
+                                        expanded = expanded,
+                                        onExpandedChange = { expanded = !expanded }
+                                    ) {
+                                        OutlinedTextField(
+                                            value = newWorkType,
+                                            onValueChange = { newWorkType = it },
+                                            label = { Text("Тип работ") },
+                                            readOnly = true,
+                                            trailingIcon = {
+                                                Icon(
+                                                    imageVector = Icons.Default.KeyboardArrowDown,
+                                                    contentDescription = "Выберите тип",
+                                                    modifier = Modifier.clickable { expanded = !expanded }
+                                                )
+                                            },
+                                            colors = TextFieldDefaults.outlinedTextFieldColors(
+                                                focusedBorderColor = Color(0xFF4CAF50),
+                                                unfocusedBorderColor = Color.Gray,
+                                                focusedLabelColor = Color(0xFF4CAF50),
+                                                unfocusedLabelColor = Color.Gray
+                                            ),
+                                            modifier = Modifier
+                                                .fillMaxWidth()
+                                        )
+                                        ExposedDropdownMenu(
+                                            expanded = expanded,
+                                            onDismissRequest = { expanded = false }
+                                        ) {
+                                            workTypeOptions.forEach { option ->
+                                                DropdownMenuItem(
+                                                    onClick = {
+                                                        newWorkType = option
+                                                        expanded = false
+                                                    },
+                                                    content = {
+                                                        Text(text = option)
+                                                    }
+                                                )
+                                            }
+                                        }
+                                    }
+                                }
+                                Spacer(modifier = Modifier.height(8.dp))
+
+                                DateInputField(
+                                    label = "Дата",
+                                    date = newDate,
+                                    onDateSelected = { newDate = it },
+                                    modifier = Modifier.fillMaxWidth()
+                                )
+                                Spacer(modifier = Modifier.height(8.dp))
+
+                                OutlinedTextField(
+                                    value = newCost,
+                                    onValueChange = { if (it.all { it.isDigit() || it == '.' } || it.isEmpty()) newCost = it },
+                                    label = { Text("Стоимость (руб)") },
+                                    modifier = Modifier.fillMaxWidth(),
+                                    keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal),
+                                    colors = TextFieldDefaults.outlinedTextFieldColors(
+                                        focusedBorderColor = Color(0xFF4CAF50),
+                                        unfocusedBorderColor = Color.Gray,
+                                        focusedLabelColor = Color(0xFF4CAF50),
+                                        unfocusedLabelColor = Color.Gray
+                                    )
+                                )
+                                Spacer(modifier = Modifier.height(8.dp))
+
+                                Row(
+                                    modifier = Modifier
+                                        .fillMaxWidth()
+                                        .padding(horizontal = 8.dp),
+                                    horizontalArrangement = Arrangement.SpaceBetween
+                                ) {
+                                    Button(
+                                        onClick = {
+                                            if (newName.isNotEmpty() && newWorkType.isNotEmpty() && newDate.isNotEmpty() && newCost.isNotEmpty()) {
+                                                logsState.value = logsState.value + MaintenanceLog(newName, newWorkType, newDate, newCost)
+                                                showAddCard = false
+                                            } else {
+                                                scope.launch {
+                                                    scaffoldState.snackbarHostState.showSnackbar(
+                                                        "Заполните все поля"
+                                                    )
+                                                }
+                                            }
+                                        },
+                                        colors = ButtonDefaults.buttonColors(backgroundColor = Color(0xFF4CAF50))
+                                    ) {
+                                        Text("Добавить", color = Color.White)
+                                    }
+                                    Button(
+                                        onClick = { showAddCard = false },
+                                        colors = ButtonDefaults.buttonColors(backgroundColor = Color.Gray)
+                                    ) {
+                                        Text("Закрыть", color = Color.White)
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
                 items(filteredLogs) { log ->
                     Card(
                         modifier = Modifier
@@ -245,101 +382,6 @@ fun MaintenanceScreen(
                                     style = MaterialTheme.typography.body2,
                                     color = Color(0xFF4CAF50)
                                 )
-                            }
-                        }
-                    }
-                }
-                if (showAddCard) {
-                    item {
-                        Card(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .padding(vertical = 4.dp),
-                            elevation = 4.dp
-                        ) {
-                            Column(modifier = Modifier.padding(8.dp)) {
-                                var newName by remember { mutableStateOf("") }
-                                var newWorkType by remember { mutableStateOf("") }
-                                var newDate by remember { mutableStateOf("") }
-                                var newCost by remember { mutableStateOf("") }
-
-                                OutlinedTextField(
-                                    value = newName,
-                                    onValueChange = { newName = it },
-                                    label = { Text("Название") },
-                                    modifier = Modifier.fillMaxWidth(),
-                                    colors = TextFieldDefaults.outlinedTextFieldColors(
-                                        focusedBorderColor = Color(0xFF4CAF50),
-                                        unfocusedBorderColor = Color.Gray,
-                                        focusedLabelColor = Color(0xFF4CAF50),
-                                        unfocusedLabelColor = Color.Gray
-                                    )
-                                )
-                                Spacer(modifier = Modifier.height(8.dp))
-                                OutlinedTextField(
-                                    value = newWorkType,
-                                    onValueChange = { newWorkType = it },
-                                    label = { Text("Тип работ") },
-                                    modifier = Modifier.fillMaxWidth(),
-                                    colors = TextFieldDefaults.outlinedTextFieldColors(
-                                        focusedBorderColor = Color(0xFF4CAF50),
-                                        unfocusedBorderColor = Color.Gray,
-                                        focusedLabelColor = Color(0xFF4CAF50),
-                                        unfocusedLabelColor = Color.Gray
-                                    )
-                                )
-                                Spacer(modifier = Modifier.height(8.dp))
-                                DateInputField(
-                                    label = "Дата",
-                                    date = newDate,
-                                    onDateSelected = { newDate = it },
-                                    modifier = Modifier.fillMaxWidth()
-                                )
-                                Spacer(modifier = Modifier.height(8.dp))
-                                OutlinedTextField(
-                                    value = newCost,
-                                    onValueChange = { if (it.all { it.isDigit() || it == '.' } || it.isEmpty()) newCost = it },
-                                    label = { Text("Стоимость (руб)") },
-                                    modifier = Modifier.fillMaxWidth(),
-                                    keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal),
-                                    colors = TextFieldDefaults.outlinedTextFieldColors(
-                                        focusedBorderColor = Color(0xFF4CAF50),
-                                        unfocusedBorderColor = Color.Gray,
-                                        focusedLabelColor = Color(0xFF4CAF50),
-                                        unfocusedLabelColor = Color.Gray
-                                    )
-                                )
-                                Spacer(modifier = Modifier.height(8.dp))
-                                Row(
-                                    modifier = Modifier
-                                        .fillMaxWidth()
-                                        .padding(horizontal = 8.dp),
-                                    horizontalArrangement = Arrangement.SpaceBetween
-                                ) {
-                                    Button(
-                                        onClick = {
-                                            if (newName.isNotEmpty() && newWorkType.isNotEmpty() && newDate.isNotEmpty() && newCost.isNotEmpty()) {
-                                                logsState.value = logsState.value + MaintenanceLog(newName, newWorkType, newDate, newCost)
-                                                showAddCard = false
-                                            } else {
-                                                scope.launch {
-                                                    scaffoldState.snackbarHostState.showSnackbar(
-                                                        "Заполните все поля"
-                                                    )
-                                                }
-                                            }
-                                        },
-                                        colors = ButtonDefaults.buttonColors(backgroundColor = Color(0xFF4CAF50))
-                                    ) {
-                                        Text("Добавить", color = Color.White)
-                                    }
-                                    Button(
-                                        onClick = { showAddCard = false },
-                                        colors = ButtonDefaults.buttonColors(backgroundColor = Color.Gray)
-                                    ) {
-                                        Text("Закрыть", color = Color.White)
-                                    }
-                                }
                             }
                         }
                     }
