@@ -481,4 +481,60 @@ fun ReminderScreen(
         }
     }
 
+    if (showDetailDialog && selectedReminder != null) {
+        AlertDialog(
+            onDismissRequest = { showDetailDialog = false },
+            title = { Text(selectedReminder!!.title) },
+            text = {
+                Column {
+                    Text(
+                        text = if (selectedReminder!!.description.isNotEmpty()) {
+                            selectedReminder!!.description
+                        } else {
+                            "Нет подробностей"
+                        },
+                        style = MaterialTheme.typography.body1
+                    )
+                    Spacer(modifier = Modifier.height(8.dp))
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.SpaceBetween
+                    ) {
+                        Text(
+                            text = if (selectedReminder!!.mileage > 0) {
+                                "На пробеге: ${selectedReminder!!.mileage} км"
+                            } else {
+                                "Пробег не указан"
+                            },
+                            style = MaterialTheme.typography.body2
+                        )
+                        Text(
+                            text = selectedReminder!!.repairDate,
+                            style = MaterialTheme.typography.body2
+                        )
+                    }
+                }
+            },
+            buttons = {
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(8.dp),
+                    horizontalArrangement = Arrangement.SpaceBetween
+                ) {
+                    TextButton(
+                        onClick = {
+                            remindersState.value = remindersState.value.filter { it != selectedReminder }
+                            showDetailDialog = false
+                        }
+                    ) {
+                        Text("Удалить", color = Color.Red)
+                    }
+                    TextButton(onClick = { showDetailDialog = false }) {
+                        Text("Закрыть", color = Color.Gray)
+                    }
+                }
+            }
+        )
+    }
 }
