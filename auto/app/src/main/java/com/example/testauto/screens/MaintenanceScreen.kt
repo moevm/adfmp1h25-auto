@@ -47,6 +47,12 @@ fun MaintenanceScreen(
     var tempFilterEndDate by remember { mutableStateOf("") }
     var tempFilterCost by remember { mutableStateOf(0f) }
 
+    // Финальные переменные для фильтров
+    var filterWorkType by remember { mutableStateOf("") }
+    var filterStartDate by remember { mutableStateOf("") }
+    var filterEndDate by remember { mutableStateOf("") }
+    var filterCost by remember { mutableStateOf(0f) }
+
     val costRange = 0f..20000f
 
     var searchQuery by remember { mutableStateOf("") }
