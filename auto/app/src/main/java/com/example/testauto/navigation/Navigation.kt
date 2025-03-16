@@ -28,6 +28,7 @@ import java.util.Locale
 const val SURVEY_ROUTE = "survey"
 const val PREFS_NAME = "ReminderPrefs"
 const val KEY_REMINDERS = "reminders"
+const val KEY_MAINTENANCE_LOGS = "maintenance_logs" // Новый ключ для MaintenanceScreen
 
 // Функция для преобразования даты из формата гггг-мм-дд в дд.мм.гггг
 fun convertToRussianDateFormat(dateStr: String): String {
@@ -41,7 +42,7 @@ fun convertToRussianDateFormat(dateStr: String): String {
     }
 }
 
-// Начальные захардкоженные данные
+// Начальные захардкоженные данные для напоминаний
 val initialReminders = listOf(
     Reminder(
         "Аккумулятор",
@@ -70,6 +71,28 @@ val initialReminders = listOf(
         convertToRussianDateFormat("2025-03-10"),
         "Требуется обслуживание или замена подвески.",
         23000
+    )
+)
+
+// Начальные данные для MaintenanceScreen
+val initialMaintenanceLogs = listOf(
+    MaintenanceLog(
+        "Обслуживание коробки передач",
+        "Замена",
+        convertToRussianDateFormat("2025-03-05"),
+        "10000"
+    ),
+    MaintenanceLog(
+        "Обслуживание дисков",
+        "Покупка",
+        convertToRussianDateFormat("2025-03-06"),
+        "8000"
+    ),
+    MaintenanceLog(
+        "Обслуживание датчиков",
+        "Замена",
+        convertToRussianDateFormat("2025-03-07"),
+        "3000"
     )
 )
 
@@ -109,30 +132,32 @@ fun MyApp() {
         saveReminders(remindersState.value)
     }
 
+    // Загружаем записи обслуживания из SharedPreferences или используем начальные данные
+    val savedMaintenanceLogsJson = prefs.getString(KEY_MAINTENANCE_LOGS, null)
     val maintenanceLogsState = remember {
         mutableStateOf(
-            listOf(
-                MaintenanceLog(
-                    "Обслуживание коробки передач",
-                    "Замена",
-                    convertToRussianDateFormat("2025-03-05"),
-                    "10000"
-                ),
-                MaintenanceLog(
-                    "Обслуживание дисков",
-                    "Покупка",
-                    convertToRussianDateFormat("2025-03-06"),
-                    "8000"
-                ),
-                MaintenanceLog(
-                    "Обслуживание датчиков",
-                    "Замена",
-                    convertToRussianDateFormat("2025-03-07"),
-                    "3000"
-                )
-            )
+            if (savedMaintenanceLogsJson != null) {
+                val type = object : TypeToken<List<MaintenanceLog>>() {}.type
+                gson.fromJson(savedMaintenanceLogsJson, type) ?: initialMaintenanceLogs
+            } else {
+                initialMaintenanceLogs
+            }
         )
     }
+
+    // Функция для сохранения записей обслуживания в SharedPreferences
+    fun saveMaintenanceLogs(logs: List<MaintenanceLog>) {
+        with(prefs.edit()) {
+            putString(KEY_MAINTENANCE_LOGS, gson.toJson(logs))
+            apply()
+        }
+    }
+
+    // Сохраняем записи обслуживания при каждом изменении maintenanceLogsState
+    LaunchedEffect(maintenanceLogsState.value) {
+        saveMaintenanceLogs(maintenanceLogsState.value)
+    }
+
     val surveyDataState = remember { mutableStateOf<SurveyData?>(null) }
 
     Scaffold(

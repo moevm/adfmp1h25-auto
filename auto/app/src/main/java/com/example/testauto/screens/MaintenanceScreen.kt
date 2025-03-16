@@ -17,6 +17,7 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.text.input.KeyboardCapitalization
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavHostController
@@ -26,9 +27,9 @@ import com.example.testauto.components.DateInputField
 import com.example.testauto.components.InfoDialog
 import com.example.testauto.models.MaintenanceLog
 import com.example.testauto.ui.theme.getColorFromResources
+import kotlinx.coroutines.launch
 import java.time.LocalDate
 import java.time.format.DateTimeFormatter
-import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalMaterialApi::class)
 @Composable
@@ -36,7 +37,7 @@ fun MaintenanceScreen(
     navController: NavHostController,
     logsState: MutableState<List<MaintenanceLog>>
 ) {
-    var showAddCard by remember { mutableStateOf(false) } // Заменили showAddDialog на showAddCard
+    var showAddCard by remember { mutableStateOf(false) }
     var showInfo by remember { mutableStateOf(false) }
     var showFilterDialog by remember { mutableStateOf(false) }
     var selectedLog by remember { mutableStateOf<MaintenanceLog?>(null) }
@@ -83,6 +84,7 @@ fun MaintenanceScreen(
     }
 
     Scaffold(
+        scaffoldState = scaffoldState, // Добавляем scaffoldState для отображения Snackbar
         topBar = {
             CustomTopBar(
                 title = "Обслуживания",
@@ -222,22 +224,27 @@ fun MaintenanceScreen(
                                 var newWorkType by remember { mutableStateOf("") }
                                 var newDate by remember { mutableStateOf("") }
                                 var newCost by remember { mutableStateOf("") }
-                                var expanded by remember { mutableStateOf(false) } // Для управления открытием/закрытием селектора
+                                var expanded by remember { mutableStateOf(false) } // Для управления селектором
 
-                                // Список вариантов для селектора
-                                val workTypeOptions = listOf("замена", "покупка", "ремонт")
+                                val workTypeOptions = listOf("Замена", "Покупка", "Ремонт")
 
                                 OutlinedTextField(
                                     value = newName,
                                     onValueChange = { newName = it },
                                     label = { Text("Название") },
-                                    modifier = Modifier.fillMaxWidth(),
+                                    keyboardOptions = KeyboardOptions(
+                                        capitalization = KeyboardCapitalization.Words,
+                                        keyboardType = KeyboardType.Text
+                                    ),
                                     colors = TextFieldDefaults.outlinedTextFieldColors(
-                                        focusedBorderColor = Color(0xFF4CAF50),
-                                        unfocusedBorderColor = Color.Gray,
-                                        focusedLabelColor = Color(0xFF4CAF50),
-                                        unfocusedLabelColor = Color.Gray
-                                    )
+                                        focusedBorderColor = Color(0xFF6495ED).copy(alpha = 0.7f),
+                                        unfocusedBorderColor = Color(0xFF6495ED).copy(alpha = 0.7f),
+                                        disabledBorderColor = Color(0xFF6495ED).copy(alpha = 0.7f),
+                                        errorBorderColor = Color(0xFF6495ED).copy(alpha = 0.7f),
+                                        focusedLabelColor = Color(0xFF6495ED).copy(alpha = 0.7f),
+                                        unfocusedLabelColor = Color(0xFF6495ED).copy(alpha = 0.7f)
+                                    ),
+                                    modifier = Modifier.fillMaxWidth(),
                                 )
                                 Spacer(modifier = Modifier.height(8.dp))
 
@@ -260,13 +267,14 @@ fun MaintenanceScreen(
                                                 )
                                             },
                                             colors = TextFieldDefaults.outlinedTextFieldColors(
-                                                focusedBorderColor = Color(0xFF4CAF50),
-                                                unfocusedBorderColor = Color.Gray,
-                                                focusedLabelColor = Color(0xFF4CAF50),
-                                                unfocusedLabelColor = Color.Gray
+                                                focusedBorderColor = Color(0xFF6495ED).copy(alpha = 0.7f),
+                                                unfocusedBorderColor = Color(0xFF6495ED).copy(alpha = 0.7f),
+                                                disabledBorderColor = Color(0xFF6495ED).copy(alpha = 0.7f),
+                                                errorBorderColor = Color(0xFF6495ED).copy(alpha = 0.7f),
+                                                focusedLabelColor = Color(0xFF6495ED).copy(alpha = 0.7f),
+                                                unfocusedLabelColor = Color(0xFF6495ED).copy(alpha = 0.7f)
                                             ),
-                                            modifier = Modifier
-                                                .fillMaxWidth()
+                                            modifier = Modifier.fillMaxWidth()
                                         )
                                         ExposedDropdownMenu(
                                             expanded = expanded,
@@ -277,11 +285,10 @@ fun MaintenanceScreen(
                                                     onClick = {
                                                         newWorkType = option
                                                         expanded = false
-                                                    },
-                                                    content = {
-                                                        Text(text = option)
                                                     }
-                                                )
+                                                ) {
+                                                    Text(text = option)
+                                                }
                                             }
                                         }
                                     }
@@ -303,12 +310,13 @@ fun MaintenanceScreen(
                                     modifier = Modifier.fillMaxWidth(),
                                     keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal),
                                     colors = TextFieldDefaults.outlinedTextFieldColors(
-                                        focusedBorderColor = Color(0xFF4CAF50),
-                                        unfocusedBorderColor = Color.Gray,
-                                        focusedLabelColor = Color(0xFF4CAF50),
-                                        unfocusedLabelColor = Color.Gray
-                                    )
-                                )
+                                        focusedBorderColor = Color(0xFF6495ED).copy(alpha = 0.7f),
+                                        unfocusedBorderColor = Color(0xFF6495ED).copy(alpha = 0.7f),
+                                        disabledBorderColor = Color(0xFF6495ED).copy(alpha = 0.7f),
+                                        errorBorderColor = Color(0xFF6495ED).copy(alpha = 0.7f),
+                                        focusedLabelColor = Color(0xFF6495ED).copy(alpha = 0.7f),
+                                        unfocusedLabelColor = Color(0xFF6495ED).copy(alpha = 0.7f)
+                                    )                                )
                                 Spacer(modifier = Modifier.height(8.dp))
 
                                 Row(
@@ -325,7 +333,7 @@ fun MaintenanceScreen(
                                             } else {
                                                 scope.launch {
                                                     scaffoldState.snackbarHostState.showSnackbar(
-                                                        "Заполните все поля"
+                                                        "Заполните, пожалуйста, все поля"
                                                     )
                                                 }
                                             }
@@ -392,7 +400,7 @@ fun MaintenanceScreen(
                 modifier = Modifier
                     .fillMaxWidth()
                     .padding(end = 16.dp)
-                    .clickable { showAddCard = true }, // Изменили на showAddCard
+                    .clickable { showAddCard = true },
                 horizontalArrangement = Arrangement.End,
                 verticalAlignment = Alignment.CenterVertically
             ) {

@@ -85,13 +85,13 @@ fun HomeScreen(
                         val daysLeft = ChronoUnit.DAYS.between(LocalDate.now(), LocalDate.parse(it.repairDate, formatter))
                         if (daysLeft >= 0) {
                             Text(
-                                "Ближайшее напоминание: ${it.title} через $daysLeft дней",
+                                "Ближайшее напоминание: \"${it.title}\" через $daysLeft дней",
                                 color = Color.Red,
                                 style = MaterialTheme.typography.body1
                             )
                         } else {
                             Text(
-                                "Срок напоминания ${it.title} истек ${-daysLeft} дней назад",
+                                "Срок напоминания \"${it.title}\" истек ${-daysLeft} дней назад",
                                 color = Color.Red,
                                 style = MaterialTheme.typography.body1
                             )
