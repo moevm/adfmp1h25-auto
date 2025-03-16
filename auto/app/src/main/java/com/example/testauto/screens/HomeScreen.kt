@@ -73,6 +73,19 @@ fun HomeScreen(
             ) {
                 Text("Добавить напоминание")
             }
+            Spacer(modifier = Modifier.height(12.dp))
+            Button(
+                onClick = {
+                    navController.navigate("maintenance") {
+                        popUpTo("home") { saveState = true; inclusive = false }
+                        launchSingleTop = true
+                    }
+                },
+                modifier = cardModifier.height(48.dp),
+                shape = RoundedCornerShape(8.dp)
+            ) {
+                Text("Добавить обслуживание")
+            }
         }
     }
 }
