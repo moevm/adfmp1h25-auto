@@ -417,4 +417,84 @@ fun MaintenanceScreen(
         )
     }
 
+    if (showFilterDialog) {
+        AlertDialog(
+            onDismissRequest = { showFilterDialog = false },
+            title = { Text("Фильтрация") },
+            text = {
+                Column {
+                    OutlinedTextField(
+                        value = tempFilterWorkType,
+                        onValueChange = { tempFilterWorkType = it },
+                        label = { Text("Тип работ", color = Color.White) },
+                        modifier = Modifier.fillMaxWidth(),
+                        colors = TextFieldDefaults.outlinedTextFieldColors(
+                            focusedBorderColor = Color(0xFF4CAF50),
+                            unfocusedBorderColor = Color.Gray,
+                            focusedLabelColor = Color.White,
+                            unfocusedLabelColor = Color.White
+                        )
+                    )
+                    Spacer(modifier = Modifier.height(8.dp))
+                    DateInputField(
+                        label = "Дата от",
+                        date = tempFilterStartDate,
+                        onDateSelected = { tempFilterStartDate = it },
+                        modifier = Modifier.fillMaxWidth()
+                    )
+                    Spacer(modifier = Modifier.height(8.dp))
+                    DateInputField(
+                        label = "Дата до",
+                        date = tempFilterEndDate,
+                        onDateSelected = { tempFilterEndDate = it },
+                        modifier = Modifier.fillMaxWidth()
+                    )
+                    Spacer(modifier = Modifier.height(8.dp))
+                    Text(
+                        text = "Максимальная стоимость: ${tempFilterCost.toInt()} руб",
+                        color = Color.White,
+                        modifier = Modifier.padding(bottom = 4.dp)
+                    )
+                    Slider(
+                        value = tempFilterCost,
+                        onValueChange = { tempFilterCost = it },
+                        valueRange = costRange,
+                        steps = 199,
+                        colors = SliderDefaults.colors(
+                            thumbColor = Color(0xFF4CAF50),
+                            activeTrackColor = Color(0xFF4CAF50),
+                            inactiveTrackColor = Color.Gray
+                        )
+                    )
+                }
+            },
+            buttons = {
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(8.dp),
+                    horizontalArrangement = Arrangement.SpaceBetween
+                ) {
+                    Button(
+                        onClick = { showFilterDialog = false },
+                        colors = ButtonDefaults.buttonColors(backgroundColor = Color(0xFF757575))
+                    ) {
+                        Text("Назад", color = Color.White)
+                    }
+                    Button(
+                        onClick = {
+                            filterWorkType = tempFilterWorkType
+                            filterStartDate = tempFilterStartDate
+                            filterEndDate = tempFilterEndDate
+                            filterCost = tempFilterCost
+                            showFilterDialog = false
+                        },
+                        colors = ButtonDefaults.buttonColors(backgroundColor = Color(0xFF4CAF50))
+                    ) {
+                        Text("Применить", color = Color.White)
+                    }
+                }
+            }
+        )
+    }
 }
