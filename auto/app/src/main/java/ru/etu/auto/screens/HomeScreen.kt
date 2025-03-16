@@ -1,0 +1,134 @@
+package ru.etu.auto.screens
+
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.Button
+import androidx.compose.material.Card
+import androidx.compose.material.Divider
+import androidx.compose.material.MaterialTheme
+import androidx.compose.material.Scaffold
+import androidx.compose.material.Text
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.unit.dp
+import androidx.navigation.NavHostController
+import ru.etu.auto.components.CustomTopBar
+import ru.etu.auto.components.InfoDialog
+import ru.etu.auto.models.MaintenanceLog
+import ru.etu.auto.models.Reminder
+import java.time.LocalDate
+import java.time.format.DateTimeFormatter
+import java.time.temporal.ChronoUnit
+
+@Composable
+fun HomeScreen(
+    navController: NavHostController,
+    reminders: List<Reminder>,
+    maintenanceLogs: List<MaintenanceLog>
+) {
+    var showInfo by remember { mutableStateOf(false) }
+    if (showInfo) {
+        InfoDialog { showInfo = false }
+    }
+
+    val formatter = DateTimeFormatter.ofPattern("dd.MM.yyyy")
+    val nearestReminder = reminders.minByOrNull { LocalDate.parse(it.repairDate, formatter) }
+    val lastCheck = maintenanceLogs.maxByOrNull { LocalDate.parse(it.date, formatter) }
+
+
+    Scaffold(
+        topBar = {
+            CustomTopBar(
+                title = "Главная",
+                onInfoClick = { showInfo = true },
+                onProfileClick = { navController.navigate("survey") }
+            )
+        }
+    ) { innerPadding ->
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(innerPadding)
+                .padding(16.dp),
+            verticalArrangement = Arrangement.Top,
+            horizontalAlignment = Alignment.CenterHorizontally
+        ) {
+            val cardModifier = Modifier
+                .fillMaxWidth()
+                .padding(8.dp)
+
+            Card(
+                modifier = cardModifier,
+                backgroundColor = Color.LightGray,
+                shape = RoundedCornerShape(8.dp),
+                elevation = 4.dp
+            ) {
+                Column(
+                    modifier = Modifier.padding(16.dp),
+                    verticalArrangement = Arrangement.spacedBy(8.dp)
+                ) {
+                    Text("Всего напоминаний: ${reminders.size}", style = MaterialTheme.typography.h6)
+                    Divider(color = Color.Gray, thickness = 1.dp)
+                    nearestReminder?.let {
+                        val daysLeft = ChronoUnit.DAYS.between(LocalDate.now(), LocalDate.parse(it.repairDate, formatter))
+                        if (daysLeft >= 0) {
+                            Text(
+                                "Ближайшее напоминание: \"${it.title}\" через $daysLeft дней",
+                                color = Color.Red,
+                                style = MaterialTheme.typography.body1
+                            )
+                        } else {
+                            Text(
+                                "Срок напоминания \"${it.title}\" истек ${-daysLeft} дней назад",
+                                color = Color.Red,
+                                style = MaterialTheme.typography.body1
+                            )
+                        }
+                    }
+                    Divider(color = Color.Gray, thickness = 1.dp)
+                    lastCheck?.let {
+                        Text("Последняя проверка: ${it.name}, ${it.workType} (Дата: ${it.date})")
+                    }
+                }
+            }
+            Spacer(modifier = Modifier.height(12.dp))
+            Button(
+                onClick = {
+                    navController.navigate("reminders") {
+                        popUpTo("home") { saveState = true; inclusive = false }
+                        launchSingleTop = true
+                    }
+                },
+                modifier = cardModifier.height(48.dp),
+                shape = RoundedCornerShape(8.dp)
+            ) {
+                Text("Добавить напоминание")
+            }
+            Spacer(modifier = Modifier.height(12.dp))
+            Button(
+                onClick = {
+                    navController.navigate("maintenance") {
+                        popUpTo("home") { saveState = true; inclusive = false }
+                        launchSingleTop = true
+                    }
+                },
+                modifier = cardModifier.height(48.dp),
+                shape = RoundedCornerShape(8.dp)
+            ) {
+                Text("Добавить обслуживание")
+            }
+        }
+    }
+}

@@ -4,11 +4,11 @@ plugins {
 }
 
 android {
-    namespace = "com.example.testauto"
+    namespace = "ru.etu.auto"
     compileSdk = 35
 
     defaultConfig {
-        applicationId = "com.example.testauto"
+        applicationId = "ru.etu.auto"
         minSdk = 26
         targetSdk = 35
         versionCode = 1
