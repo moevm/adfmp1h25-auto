@@ -61,6 +61,22 @@ fun HomeScreen(
                 .fillMaxWidth()
                 .padding(8.dp)
 
+            Card(
+                modifier = cardModifier,
+                backgroundColor = Color.LightGray,
+                shape = RoundedCornerShape(8.dp),
+                elevation = 4.dp
+            ) {
+                Column(
+                    modifier = Modifier.padding(16.dp),
+                    verticalArrangement = Arrangement.spacedBy(8.dp)
+                ) {
+                    Text("Всего напоминаний: ${reminders.size}", style = MaterialTheme.typography.h6)
+                    Divider(color = Color.Gray, thickness = 1.dp)
+
+                }
+            }
+            Spacer(modifier = Modifier.height(12.dp))
             Button(
                 onClick = {
                     navController.navigate("reminders") {
