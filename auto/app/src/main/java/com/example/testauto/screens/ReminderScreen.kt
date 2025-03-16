@@ -177,6 +177,308 @@ fun ReminderScreen(
             }
         }
     ) { innerPadding ->
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(innerPadding)
+                .padding(16.dp)
+        ) {
+            Column(modifier = Modifier.fillMaxWidth()) {
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Text(text = "Сортировка", style = MaterialTheme.typography.body1)
+                    Spacer(modifier = Modifier.width(8.dp))
+                    Row(
+                        modifier = Modifier
+                            .background(
+                                color = getColorFromResources(R.color.main_color),
+                                shape = RoundedCornerShape(4.dp)
+                            )
+                            .clickable {
+                                isDateAscending = !isDateAscending
+                                val formatter = DateTimeFormatter.ofPattern("dd.MM.yyyy")
+                                remindersState.value = if (isDateAscending) {
+                                    remindersState.value.sortedBy {
+                                        LocalDate.parse(it.repairDate, formatter)
+                                    }
+                                } else {
+                                    remindersState.value.sortedByDescending {
+                                        LocalDate.parse(it.repairDate, formatter)
+                                    }
+                                }
+                            }
+                            .padding(horizontal = 8.dp, vertical = 4.dp),
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Text(text = "Дата", color = Color.White)
+                        Spacer(modifier = Modifier.width(4.dp))
+                        Icon(
+                            imageVector = if (isDateAscending) Icons.Default.KeyboardArrowUp else Icons.Default.KeyboardArrowDown,
+                            contentDescription = "Sort Date",
+                            tint = Color.White,
+                            modifier = Modifier.size(20.dp)
+                        )
+                    }
+                    Spacer(modifier = Modifier.width(8.dp))
+                    Row(
+                        modifier = Modifier
+                            .background(
+                                color = getColorFromResources(R.color.main_color),
+                                shape = RoundedCornerShape(4.dp)
+                            )
+                            .clickable {
+                                isMileageAscending = !isMileageAscending
+                                remindersState.value = if (isMileageAscending) {
+                                    remindersState.value.sortedBy { it.mileage }
+                                } else {
+                                    remindersState.value.sortedByDescending { it.mileage }
+                                }
+                            }
+                            .padding(horizontal = 8.dp, vertical = 4.dp),
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Text(text = "Пробег", color = Color.White)
+                        Spacer(modifier = Modifier.width(4.dp))
+                        Icon(
+                            imageVector = if (isMileageAscending) Icons.Default.KeyboardArrowUp else Icons.Default.KeyboardArrowDown,
+                            contentDescription = "Sort Mileage",
+                            tint = Color.White,
+                            modifier = Modifier.size(20.dp)
+                        )
+                    }
+                }
+                Spacer(modifier = Modifier.height(8.dp))
+                OutlinedTextField(
+                    value = searchQuery,
+                    onValueChange = { searchQuery = it },
+                    placeholder = { Text(text = "Поиск", color = getColorFromResources(R.color.main_color)) },
+                    modifier = Modifier.fillMaxWidth(),
+                    colors = TextFieldDefaults.outlinedTextFieldColors(
+                        focusedBorderColor = getColorFromResources(R.color.main_color),
+                        unfocusedBorderColor = getColorFromResources(R.color.main_color)
+                    )
+                )
+            }
+            Spacer(modifier = Modifier.height(10.dp))
+            LazyColumn {
+                if (showAddCard) {
+                    item {
+                        Card(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(vertical = 4.dp),
+                            elevation = 4.dp
+                        ) {
+                            Column(modifier = Modifier.padding(8.dp)) {
+                                var title by remember { mutableStateOf("") }
+                                var repairDate by remember { mutableStateOf("") }
+                                var mileage by remember { mutableStateOf("") }
+                                var description by remember { mutableStateOf("") }
+
+                                OutlinedTextField(
+                                    value = title,
+                                    onValueChange = { title = it },
+                                    label = { Text("Заголовок") },
+                                    keyboardOptions = KeyboardOptions(
+                                        capitalization = KeyboardCapitalization.Words,
+                                        keyboardType = KeyboardType.Text
+                                    ),
+                                    colors = TextFieldDefaults.outlinedTextFieldColors(
+                                        focusedBorderColor = Color(0xFF6495ED).copy(alpha = 0.7f),
+                                        unfocusedBorderColor = Color(0xFF6495ED).copy(alpha = 0.7f),
+                                        disabledBorderColor = Color(0xFF6495ED).copy(alpha = 0.7f),
+                                        errorBorderColor = Color(0xFF6495ED).copy(alpha = 0.7f),
+                                        focusedLabelColor = Color(0xFF6495ED).copy(alpha = 0.7f),
+                                        unfocusedLabelColor = Color(0xFF6495ED).copy(alpha = 0.7f)
+                                    ),
+                                    modifier = Modifier.fillMaxWidth()
+                                )
+                                Spacer(modifier = Modifier.height(8.dp))
+
+                                DateInputField(
+                                    label = "Дата",
+                                    date = repairDate,
+                                    modifier = Modifier
+                                        .fillMaxWidth()
+                                        .padding(top = 4.dp),
+                                    onDateSelected = { repairDate = it }
+                                )
+                                Spacer(modifier = Modifier.height(8.dp))
+
+                                OutlinedTextField(
+                                    value = mileage,
+                                    onValueChange = { newValue ->
+                                        if (newValue.all { it.isDigit() } || newValue.isEmpty()) {
+                                            mileage = newValue
+                                        }
+                                    },
+                                    label = { Text("Пробег (км), опционально") },
+                                    modifier = Modifier
+                                        .fillMaxWidth()
+                                        .padding(top = 4.dp),
+                                    keyboardOptions = KeyboardOptions(
+                                        keyboardType = KeyboardType.Number
+                                    ),
+                                    colors = TextFieldDefaults.outlinedTextFieldColors(
+                                        focusedBorderColor = Color(0xFF6495ED).copy(alpha = 0.7f),
+                                        unfocusedBorderColor = Color(0xFF6495ED).copy(alpha = 0.7f),
+                                        disabledBorderColor = Color(0xFF6495ED).copy(alpha = 0.7f),
+                                        errorBorderColor = Color(0xFF6495ED).copy(alpha = 0.7f),
+                                        focusedLabelColor = Color(0xFF6495ED).copy(alpha = 0.7f),
+                                        unfocusedLabelColor = Color(0xFF6495ED).copy(alpha = 0.7f)
+                                    )
+                                )
+                                Spacer(modifier = Modifier.height(8.dp))
+
+                                OutlinedTextField(
+                                    value = description,
+                                    onValueChange = { description = it },
+                                    label = { Text("Описание проблемы, опционально") },
+                                    keyboardOptions = KeyboardOptions(
+                                        capitalization = KeyboardCapitalization.Words,
+                                        keyboardType = KeyboardType.Text
+                                    ),
+                                    colors = TextFieldDefaults.outlinedTextFieldColors(
+                                        focusedBorderColor = Color(0xFF6495ED).copy(alpha = 0.7f),
+                                        unfocusedBorderColor = Color(0xFF6495ED).copy(alpha = 0.7f),
+                                        disabledBorderColor = Color(0xFF6495ED).copy(alpha = 0.7f),
+                                        errorBorderColor = Color(0xFF6495ED).copy(alpha = 0.7f),
+                                        focusedLabelColor = Color(0xFF6495ED).copy(alpha = 0.7f),
+                                        unfocusedLabelColor = Color(0xFF6495ED).copy(alpha = 0.7f)
+                                    ),
+                                    modifier = Modifier.fillMaxWidth()
+                                )
+                                Spacer(modifier = Modifier.height(8.dp))
+
+                                Row(
+                                    modifier = Modifier
+                                        .fillMaxWidth()
+                                        .padding(horizontal = 8.dp),
+                                    horizontalArrangement = Arrangement.SpaceBetween
+                                ) {
+                                    Button(
+                                        onClick = {
+                                            if (title.isNotEmpty() && repairDate.isNotEmpty()) {
+                                                remindersState.value = remindersState.value + Reminder(
+                                                    title = title,
+                                                    dateAdded = LocalDate.now().format(DateTimeFormatter.ofPattern("dd.MM.yyyy")),
+                                                    repairDate = repairDate,
+                                                    description = description,
+                                                    mileage = mileage.toIntOrNull() ?: 0
+                                                )
+                                                showAddCard = false
+                                            } else {
+                                                scope.launch {
+                                                    scaffoldState.snackbarHostState.showSnackbar(
+                                                        "Заполните необходимые поля: Заголовок и Дата"
+                                                    )
+                                                }
+                                            }
+                                        },
+                                        colors = ButtonDefaults.buttonColors(
+                                            backgroundColor = getColorFromResources(R.color.green)
+                                        )
+                                    ) {
+                                        Text(text = "Добавить", color = Color.White)
+                                    }
+                                    Button(
+                                        onClick = { showAddCard = false },
+                                        colors = ButtonDefaults.buttonColors(
+                                            backgroundColor = Color.Gray
+                                        )
+                                    ) {
+                                        Text(text = "Закрыть", color = Color.White)
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+                items(filteredReminders) { reminder ->
+                    val formatter = DateTimeFormatter.ofPattern("dd.MM.yyyy")
+                    val currentDate = LocalDate.now()
+                    val repairDate = LocalDate.parse(reminder.repairDate, formatter)
+                    val daysUntilRepair = ChronoUnit.DAYS.between(currentDate, repairDate).toInt()
+
+                    Log.d("ReminderScreen", "Days until repair for ${reminder.title}: $daysUntilRepair")
+                    val cardColor = when {
+                        daysUntilRepair < 0 -> Color(0xFFFF2400)
+                        daysUntilRepair <= 1 -> Color.Red.copy(alpha = 0.5f)
+                        daysUntilRepair <= 7 -> Color.Yellow.copy(alpha = 0.8f)
+                        daysUntilRepair <= 30 -> getColorFromResources(R.color.main_color).copy(alpha = 0.5f)
+                        else -> Color.Gray.copy(alpha = 0.5f)
+                    }
+
+                    Card(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(vertical = 4.dp)
+                            .clickable {
+                                selectedReminder = reminder
+                                showDetailDialog = true
+                            },
+                        elevation = 4.dp
+                    ) {
+                        Box(
+                            modifier = Modifier
+                                .fillMaxSize()
+                                .background(cardColor)
+                        ) {
+                            Column(modifier = Modifier.padding(8.dp)) {
+                                Text(
+                                    text = reminder.title,
+                                    style = MaterialTheme.typography.subtitle1
+                                )
+                                Row(
+                                    modifier = Modifier.fillMaxWidth(),
+                                    horizontalArrangement = Arrangement.SpaceBetween
+                                ) {
+                                    Text(
+                                        text = "На пробеге: ${reminder.mileage} км",
+                                        style = MaterialTheme.typography.body2
+                                    )
+                                    Text(
+                                        text = reminder.repairDate,
+                                        style = MaterialTheme.typography.body2
+                                    )
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+            Spacer(modifier = Modifier.height(8.dp))
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(end = 16.dp)
+                    .clickable { showAddCard = true },
+                horizontalArrangement = Arrangement.End,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Text(
+                    text = "Добавить",
+                    color = getColorFromResources(R.color.green),
+                    modifier = Modifier.padding(end = 4.dp)
+                )
+                Box(
+                    modifier = Modifier
+                        .size(24.dp)
+                        .background(Color.Green.copy(alpha = 0.1f), shape = RoundedCornerShape(4.dp))
+                ) {
+                    Icon(
+                        imageVector = Icons.Default.Add,
+                        contentDescription = "Add",
+                        tint = Color.Green,
+                        modifier = Modifier
+                            .size(16.dp)
+                            .align(Alignment.Center)
+                    )
+                }
+            }
+        }
     }
 
 }
