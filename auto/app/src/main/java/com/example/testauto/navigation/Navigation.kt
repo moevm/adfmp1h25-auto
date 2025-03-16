@@ -41,7 +41,37 @@ fun convertToRussianDateFormat(dateStr: String): String {
     }
 }
 
-
+// Начальные захардкоженные данные
+val initialReminders = listOf(
+    Reminder(
+        "Аккумулятор",
+        convertToRussianDateFormat("2025-03-17"),
+        convertToRussianDateFormat("2025-03-17"),
+        "Аккумулятор не держит заряд, требуется проверка и возможная замена.",
+        15000
+    ),
+    Reminder(
+        "Низкий уровень масла",
+        convertToRussianDateFormat("2025-03-10"),
+        convertToRussianDateFormat("2025-03-20"),
+        "Масло почти на минимуме – проверить утечки и долить масло.",
+        10000
+    ),
+    Reminder(
+        "Давление передней правой шины",
+        convertToRussianDateFormat("2025-03-10"),
+        convertToRussianDateFormat("2025-04-01"),
+        "Давление в шине ниже нормы, необходимо проверить и подкачать шину.",
+        20000
+    ),
+    Reminder(
+        "Подвеска вышла из строя",
+        convertToRussianDateFormat("2025-03-10"),
+        convertToRussianDateFormat("2025-03-10"),
+        "Требуется обслуживание или замена подвески.",
+        23000
+    )
+)
 
 @Composable
 fun MyApp() {
