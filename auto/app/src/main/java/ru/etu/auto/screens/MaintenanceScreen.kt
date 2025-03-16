@@ -473,18 +473,53 @@ fun MaintenanceScreen(
             title = { Text("Фильтрация") },
             text = {
                 Column {
-                    OutlinedTextField(
-                        value = tempFilterWorkType,
-                        onValueChange = { tempFilterWorkType = it },
-                        label = { Text("Тип работ", color = Color.White) },
-                        modifier = Modifier.fillMaxWidth(),
-                        colors = TextFieldDefaults.outlinedTextFieldColors(
-                            focusedBorderColor = Color(0xFF4CAF50),
-                            unfocusedBorderColor = Color.Gray,
-                            focusedLabelColor = Color.White,
-                            unfocusedLabelColor = Color.White
-                        )
-                    )
+                    // Селектор для типа работ
+                    var expanded by remember { mutableStateOf(false) }
+                    val workTypeOptions = listOf("", "Замена", "Покупка", "Ремонт") // "" для сброса фильтра
+
+                    Box(modifier = Modifier.fillMaxWidth()) {
+                        ExposedDropdownMenuBox(
+                            expanded = expanded,
+                            onExpandedChange = { expanded = !expanded }
+                        ) {
+                            OutlinedTextField(
+                                value = tempFilterWorkType.ifEmpty { "Любой" },
+                                onValueChange = {},
+                                label = { Text("Тип работ", color = Color.White) },
+                                readOnly = true,
+                                trailingIcon = {
+                                    Icon(
+                                        imageVector = Icons.Default.KeyboardArrowDown,
+                                        contentDescription = "Выберите тип",
+                                        modifier = Modifier.clickable { expanded = !expanded }
+                                    )
+                                },
+                                colors = TextFieldDefaults.outlinedTextFieldColors(
+                                    focusedBorderColor = Color(0xFF4CAF50),
+                                    unfocusedBorderColor = Color.Gray,
+                                    focusedLabelColor = Color.White,
+                                    unfocusedLabelColor = Color.White
+                                ),
+                                modifier = Modifier.fillMaxWidth()
+                            )
+                            ExposedDropdownMenu(
+                                expanded = expanded,
+                                onDismissRequest = { expanded = false }
+                            ) {
+                                workTypeOptions.forEach { option ->
+                                    DropdownMenuItem(
+                                        onClick = {
+                                            tempFilterWorkType = if (option == "Любой") "" else option
+                                            expanded = false
+                                        }
+                                    ) {
+                                        Text(text = if (option == "") "Любой" else option)
+                                    }
+                                }
+                            }
+                        }
+                    }
+
                     Spacer(modifier = Modifier.height(8.dp))
                     DateInputField(
                         label = "Дата от",
