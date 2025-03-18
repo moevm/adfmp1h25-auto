@@ -20,6 +20,8 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.FocusDirection
+import androidx.compose.ui.focus.FocusRequester
+import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.text.font.FontWeight
@@ -559,6 +561,11 @@ fun ReminderScreen(
             title = { Text("Фильтрация") },
             text = {
                 Column {
+                    // Создаём FocusRequester для каждого поля
+                    val minMileageFocusRequester = remember { FocusRequester() }
+                    val maxMileageFocusRequester = remember { FocusRequester() }
+                    val focusManager = LocalFocusManager.current
+
                     DateInputField(
                         label = "Дата от",
                         date = tempFilterStartDate,
@@ -586,9 +593,13 @@ fun ReminderScreen(
                             imeAction = ImeAction.Next
                         ),
                         keyboardActions = KeyboardActions(
-                            onNext = { focusManager.moveFocus(FocusDirection.Down) }
+                            onNext = {
+                                maxMileageFocusRequester.requestFocus() // Явно передаём фокус следующему полю
+                            }
                         ),
-                        modifier = Modifier.fillMaxWidth(),
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .focusRequester(minMileageFocusRequester), // Привязываем FocusRequester
                         colors = TextFieldDefaults.outlinedTextFieldColors(
                             focusedBorderColor = Color(0xFF6495ED).copy(alpha = 0.7f),
                             unfocusedBorderColor = Color(0xFF6495ED).copy(alpha = 0.7f),
@@ -613,15 +624,12 @@ fun ReminderScreen(
                         ),
                         keyboardActions = KeyboardActions(
                             onDone = {
-                                filterStartDate = tempFilterStartDate
-                                filterEndDate = tempFilterEndDate
-                                filterMinMileage = tempFilterMinMileage
-                                filterMaxMileage = tempFilterMaxMileage
-                                showFilterDialog = false
-                                focusManager.clearFocus()
+                                focusManager.clearFocus() // Закрываем клавиатуру
                             }
                         ),
-                        modifier = Modifier.fillMaxWidth(),
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .focusRequester(maxMileageFocusRequester), // Привязываем FocusRequester
                         colors = TextFieldDefaults.outlinedTextFieldColors(
                             focusedBorderColor = Color(0xFF6495ED).copy(alpha = 0.7f),
                             unfocusedBorderColor = Color(0xFF6495ED).copy(alpha = 0.7f),
