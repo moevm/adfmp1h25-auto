@@ -238,7 +238,11 @@ fun ReminderScreen(
                                     label = { Text("Заголовок") },
                                     keyboardOptions = KeyboardOptions(
                                         capitalization = KeyboardCapitalization.Words,
-                                        keyboardType = KeyboardType.Text
+                                        keyboardType = KeyboardType.Text,
+                                        imeAction = ImeAction.Next // Указываем, что следующее действие - переход
+                                    ),
+                                    keyboardActions = KeyboardActions(
+                                        onNext = { focusManager.moveFocus(FocusDirection.Down) } // Переход на следующее поле
                                     ),
                                     colors = TextFieldDefaults.outlinedTextFieldColors(
                                         focusedBorderColor = Color(0xFF6495ED).copy(alpha = 0.7f),
@@ -250,6 +254,7 @@ fun ReminderScreen(
                                     ),
                                     modifier = Modifier.fillMaxWidth()
                                 )
+
                                 Spacer(modifier = Modifier.height(8.dp))
 
                                 DateInputField(
@@ -258,6 +263,7 @@ fun ReminderScreen(
                                     modifier = Modifier.fillMaxWidth().padding(top = 4.dp),
                                     onDateSelected = { repairDate = it }
                                 )
+
                                 Spacer(modifier = Modifier.height(8.dp))
 
                                 OutlinedTextField(
@@ -269,7 +275,13 @@ fun ReminderScreen(
                                     },
                                     label = { Text("Пробег (км), опционально") },
                                     modifier = Modifier.fillMaxWidth().padding(top = 4.dp),
-                                    keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
+                                    keyboardOptions = KeyboardOptions(
+                                        keyboardType = KeyboardType.Number,
+                                        imeAction = ImeAction.Next // Указываем, что следующее действие - переход
+                                    ),
+                                    keyboardActions = KeyboardActions(
+                                        onNext = { focusManager.moveFocus(FocusDirection.Down) } // Переход на следующее поле
+                                    ),
                                     colors = TextFieldDefaults.outlinedTextFieldColors(
                                         focusedBorderColor = Color(0xFF6495ED).copy(alpha = 0.7f),
                                         unfocusedBorderColor = Color(0xFF6495ED).copy(alpha = 0.7f),
@@ -279,6 +291,7 @@ fun ReminderScreen(
                                         unfocusedLabelColor = Color(0xFF6495ED).copy(alpha = 0.7f)
                                     )
                                 )
+
                                 Spacer(modifier = Modifier.height(8.dp))
 
                                 OutlinedTextField(
@@ -287,7 +300,11 @@ fun ReminderScreen(
                                     label = { Text("Описание проблемы, опционально") },
                                     keyboardOptions = KeyboardOptions(
                                         capitalization = KeyboardCapitalization.Words,
-                                        keyboardType = KeyboardType.Text
+                                        keyboardType = KeyboardType.Text,
+                                        imeAction = ImeAction.Done // Последнее поле, завершаем ввод
+                                    ),
+                                    keyboardActions = KeyboardActions(
+                                        onDone = { focusManager.clearFocus() } // Скрываем клавиатуру
                                     ),
                                     colors = TextFieldDefaults.outlinedTextFieldColors(
                                         focusedBorderColor = Color(0xFF6495ED).copy(alpha = 0.7f),
