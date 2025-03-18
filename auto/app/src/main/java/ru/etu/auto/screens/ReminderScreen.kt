@@ -12,6 +12,7 @@ import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.*
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
+import androidx.compose.material.icons.filled.ArrowForward
 import androidx.compose.material.icons.filled.Build
 import androidx.compose.material.icons.filled.KeyboardArrowDown
 import androidx.compose.material.icons.filled.KeyboardArrowUp
@@ -64,6 +65,7 @@ fun ReminderScreen(
     var showFilterDialog by remember { mutableStateOf(false) }
 
     var searchQuery by remember { mutableStateOf("") }
+    var appliedSearchQuery by remember { mutableStateOf("") }
     var isDateAscending by remember { mutableStateOf(true) }
     var isMileageAscending by remember { mutableStateOf(true) }
 
@@ -77,7 +79,7 @@ fun ReminderScreen(
         val minMileage = filterMinMileage.toIntOrNull() ?: Int.MIN_VALUE
         val maxMileage = filterMaxMileage.toIntOrNull() ?: Int.MAX_VALUE
 
-        (searchQuery.isEmpty() || reminder.title.contains(searchQuery, ignoreCase = true)) &&
+        (appliedSearchQuery.isEmpty() || reminder.title.contains(appliedSearchQuery, ignoreCase = true)) &&
                 (repairDate >= startDate && repairDate <= endDate) &&
                 (reminder.mileage >= minMileage && reminder.mileage <= maxMileage)
     }
@@ -118,6 +120,8 @@ fun ReminderScreen(
                             filterEndDate = ""
                             filterMinMileage = ""
                             filterMaxMileage = ""
+                            appliedSearchQuery = "" // Сбрасываем поиск
+                            searchQuery = "" // Очищаем поле ввода поиска
                         }
                         .padding(horizontal = 16.dp, vertical = 8.dp)
                 ) {
@@ -212,7 +216,28 @@ fun ReminderScreen(
                     modifier = Modifier.fillMaxWidth(),
                     colors = TextFieldDefaults.outlinedTextFieldColors(
                         focusedBorderColor = getColorFromResources(R.color.main_color),
-                        unfocusedBorderColor = getColorFromResources(R.color.main_color)
+                        unfocusedBorderColor = getColorFromResources(R.color.main_color),
+                        cursorColor = getColorFromResources(R.color.main_color)
+                    ),
+                    trailingIcon = {
+                        Icon(
+                            imageVector = Icons.Default.ArrowForward,
+                            contentDescription = "Search",
+                            tint = getColorFromResources(R.color.main_color),
+                            modifier = Modifier
+                                .clickable {
+                                    appliedSearchQuery = searchQuery
+                                    focusManager.clearFocus()
+                                }
+                                .size(24.dp)
+                        )
+                    },
+                    keyboardOptions = KeyboardOptions(imeAction = ImeAction.Search),
+                    keyboardActions = KeyboardActions(
+                        onSearch = {
+                            appliedSearchQuery = searchQuery
+                            focusManager.clearFocus()
+                        }
                     )
                 )
             }
@@ -239,10 +264,10 @@ fun ReminderScreen(
                                     keyboardOptions = KeyboardOptions(
                                         capitalization = KeyboardCapitalization.Words,
                                         keyboardType = KeyboardType.Text,
-                                        imeAction = ImeAction.Next // Указываем, что следующее действие - переход
+                                        imeAction = ImeAction.Next
                                     ),
                                     keyboardActions = KeyboardActions(
-                                        onNext = { focusManager.moveFocus(FocusDirection.Down) } // Переход на следующее поле
+                                        onNext = { focusManager.moveFocus(FocusDirection.Down) }
                                     ),
                                     colors = TextFieldDefaults.outlinedTextFieldColors(
                                         focusedBorderColor = Color(0xFF6495ED).copy(alpha = 0.7f),
@@ -277,10 +302,10 @@ fun ReminderScreen(
                                     modifier = Modifier.fillMaxWidth().padding(top = 4.dp),
                                     keyboardOptions = KeyboardOptions(
                                         keyboardType = KeyboardType.Number,
-                                        imeAction = ImeAction.Next // Указываем, что следующее действие - переход
+                                        imeAction = ImeAction.Next
                                     ),
                                     keyboardActions = KeyboardActions(
-                                        onNext = { focusManager.moveFocus(FocusDirection.Down) } // Переход на следующее поле
+                                        onNext = { focusManager.moveFocus(FocusDirection.Down) }
                                     ),
                                     colors = TextFieldDefaults.outlinedTextFieldColors(
                                         focusedBorderColor = Color(0xFF6495ED).copy(alpha = 0.7f),
@@ -301,10 +326,10 @@ fun ReminderScreen(
                                     keyboardOptions = KeyboardOptions(
                                         capitalization = KeyboardCapitalization.Words,
                                         keyboardType = KeyboardType.Text,
-                                        imeAction = ImeAction.Done // Последнее поле, завершаем ввод
+                                        imeAction = ImeAction.Done
                                     ),
                                     keyboardActions = KeyboardActions(
-                                        onDone = { focusManager.clearFocus() } // Скрываем клавиатуру
+                                        onDone = { focusManager.clearFocus() }
                                     ),
                                     colors = TextFieldDefaults.outlinedTextFieldColors(
                                         focusedBorderColor = Color(0xFF6495ED).copy(alpha = 0.7f),

@@ -69,13 +69,29 @@ fun MaintenanceScreen(
     val focusManager = LocalFocusManager.current
 
     val filteredLogs = logsState.value.filter { log ->
-        val logDate = try { LocalDate.parse(log.date, formatter) } catch (e: Exception) { LocalDate.MIN }
-        val startDate = if (filterStartDate.isNotEmpty()) LocalDate.parse(filterStartDate, formatter) else LocalDate.MIN
-        val endDate = if (filterEndDate.isNotEmpty()) LocalDate.parse(filterEndDate, formatter) else LocalDate.MAX
+        val logDate = try {
+            LocalDate.parse(log.date, formatter)
+        } catch (e: Exception) {
+            LocalDate.MIN
+        }
+        val startDate = if (filterStartDate.isNotEmpty()) LocalDate.parse(
+            filterStartDate,
+            formatter
+        ) else LocalDate.MIN
+        val endDate = if (filterEndDate.isNotEmpty()) LocalDate.parse(
+            filterEndDate,
+            formatter
+        ) else LocalDate.MAX
         val logCost = log.cost.filter { it.isDigit() || it == '.' }.toFloatOrNull() ?: 0f
 
-        (appliedSearchQuery.isEmpty() || log.name.contains(appliedSearchQuery, ignoreCase = true) || log.workType.contains(appliedSearchQuery, ignoreCase = true)) &&
-                (filterWorkType.isEmpty() || log.workType.contains(filterWorkType, ignoreCase = true)) &&
+        (appliedSearchQuery.isEmpty() || log.name.contains(
+            appliedSearchQuery,
+            ignoreCase = true
+        ) || log.workType.contains(appliedSearchQuery, ignoreCase = true)) &&
+                (filterWorkType.isEmpty() || log.workType.contains(
+                    filterWorkType,
+                    ignoreCase = true
+                )) &&
                 (logDate >= startDate && logDate <= endDate) &&
                 (filterCost == 0f || logCost <= filterCost)
     }
@@ -122,7 +138,10 @@ fun MaintenanceScreen(
                 }
                 Box(
                     modifier = Modifier
-                        .background(getColorFromResources(R.color.main_color), RoundedCornerShape(4.dp))
+                        .background(
+                            getColorFromResources(R.color.main_color),
+                            RoundedCornerShape(4.dp)
+                        )
                         .clickable { showFilterDialog = true }
                         .padding(horizontal = 16.dp, vertical = 8.dp)
                 ) {
@@ -155,13 +174,21 @@ fun MaintenanceScreen(
                     Spacer(modifier = Modifier.width(8.dp))
                     Row(
                         modifier = Modifier
-                            .background(getColorFromResources(R.color.main_color), RoundedCornerShape(4.dp))
+                            .background(
+                                getColorFromResources(R.color.main_color),
+                                RoundedCornerShape(4.dp)
+                            )
                             .clickable {
                                 isDateAscending = !isDateAscending
                                 logsState.value = if (isDateAscending) {
                                     filteredLogs.sortedBy { LocalDate.parse(it.date, formatter) }
                                 } else {
-                                    filteredLogs.sortedByDescending { LocalDate.parse(it.date, formatter) }
+                                    filteredLogs.sortedByDescending {
+                                        LocalDate.parse(
+                                            it.date,
+                                            formatter
+                                        )
+                                    }
                                 }
                             }
                             .padding(horizontal = 8.dp, vertical = 4.dp),
@@ -178,13 +205,22 @@ fun MaintenanceScreen(
                     Spacer(modifier = Modifier.width(8.dp))
                     Row(
                         modifier = Modifier
-                            .background(getColorFromResources(R.color.main_color), RoundedCornerShape(4.dp))
+                            .background(
+                                getColorFromResources(R.color.main_color),
+                                RoundedCornerShape(4.dp)
+                            )
                             .clickable {
                                 isCostAscending = !isCostAscending
                                 logsState.value = if (isCostAscending) {
-                                    filteredLogs.sortedBy { it.cost.filter { it.isDigit() || it == '.' }.toFloatOrNull() ?: 0f }
+                                    filteredLogs.sortedBy {
+                                        it.cost.filter { it.isDigit() || it == '.' }.toFloatOrNull()
+                                            ?: 0f
+                                    }
                                 } else {
-                                    filteredLogs.sortedByDescending { it.cost.filter { it.isDigit() || it == '.' }.toFloatOrNull() ?: 0f }
+                                    filteredLogs.sortedByDescending {
+                                        it.cost.filter { it.isDigit() || it == '.' }.toFloatOrNull()
+                                            ?: 0f
+                                    }
                                 }
                             }
                             .padding(horizontal = 8.dp, vertical = 4.dp),
@@ -203,7 +239,12 @@ fun MaintenanceScreen(
                 OutlinedTextField(
                     value = searchQuery,
                     onValueChange = { searchQuery = it },
-                    placeholder = { Text(text = "Поиск", color = getColorFromResources(R.color.main_color)) },
+                    placeholder = {
+                        Text(
+                            text = "Поиск",
+                            color = getColorFromResources(R.color.main_color)
+                        )
+                    },
                     modifier = Modifier.fillMaxWidth(),
                     colors = TextFieldDefaults.outlinedTextFieldColors(
                         focusedBorderColor = getColorFromResources(R.color.main_color),
@@ -251,7 +292,7 @@ fun MaintenanceScreen(
                                 var newCost by remember { mutableStateOf("") }
                                 var expanded by remember { mutableStateOf(false) }
 
-                                val workTypeOptions = listOf("замена", "покупка", "ремонт")
+                                val workTypeOptions = listOf("Замена", "Покупка", "Ремонт")
 
                                 OutlinedTextField(
                                     value = newName,
@@ -259,24 +300,23 @@ fun MaintenanceScreen(
                                     label = { Text("Название") },
                                     modifier = Modifier.fillMaxWidth(),
                                     colors = TextFieldDefaults.outlinedTextFieldColors(
-                                        focusedBorderColor = Color(0xFF4CAF50),
-                                        unfocusedBorderColor = Color.Gray,
-                                        focusedLabelColor = Color(0xFF4CAF50),
-                                        unfocusedLabelColor = Color.Gray
+                                        focusedBorderColor = Color(0xFF6495ED).copy(alpha = 0.7f),
+                                        unfocusedBorderColor = Color(0xFF6495ED).copy(alpha = 0.7f),
+                                        disabledBorderColor = Color(0xFF6495ED).copy(alpha = 0.7f),
+                                        errorBorderColor = Color(0xFF6495ED).copy(alpha = 0.7f),
+                                        focusedLabelColor = Color(0xFF6495ED).copy(alpha = 0.7f),
+                                        unfocusedLabelColor = Color(0xFF6495ED).copy(alpha = 0.7f)
                                     ),
-                                    trailingIcon = {
-                                        Icon(
-                                            imageVector = Icons.Default.ArrowForward,
-                                            contentDescription = "Next",
-                                            tint = Color(0xFF4CAF50),
-                                            modifier = Modifier
-                                                .clickable { focusManager.moveFocus(FocusDirection.Down) }
-                                                .size(24.dp)
-                                        )
-                                    },
-                                    keyboardOptions = KeyboardOptions(imeAction = ImeAction.Next),
+                                    keyboardOptions = KeyboardOptions(
+                                        capitalization = KeyboardCapitalization.Words,
+                                        keyboardType = KeyboardType.Text,
+                                        imeAction = ImeAction.Next
+                                    ),
                                     keyboardActions = KeyboardActions(
-                                        onNext = { focusManager.moveFocus(FocusDirection.Down) }
+                                        onNext = {
+                                            focusManager.moveFocus(FocusDirection.Down)
+                                            expanded = true // Открываем выпадающий список
+                                        }
                                     )
                                 )
                                 Spacer(modifier = Modifier.height(8.dp))
@@ -292,32 +332,27 @@ fun MaintenanceScreen(
                                             label = { Text("Тип работ") },
                                             readOnly = true,
                                             trailingIcon = {
-                                                Row {
-                                                    Icon(
-                                                        imageVector = Icons.Default.ArrowForward,
-                                                        contentDescription = "Next",
-                                                        tint = Color(0xFF4CAF50),
-                                                        modifier = Modifier
-                                                            .clickable { focusManager.moveFocus(FocusDirection.Down) }
-                                                            .size(24.dp)
-                                                    )
-                                                    Icon(
-                                                        imageVector = Icons.Default.KeyboardArrowDown,
-                                                        contentDescription = "Выберите тип",
-                                                        modifier = Modifier
-                                                            .clickable { expanded = !expanded }
-                                                            .size(24.dp)
-                                                    )
-                                                }
+                                                Icon(
+                                                    imageVector = Icons.Default.KeyboardArrowDown,
+                                                    contentDescription = "Выберите тип",
+                                                    modifier = Modifier
+                                                        .clickable { expanded = !expanded }
+                                                        .size(24.dp)
+                                                )
                                             },
                                             colors = TextFieldDefaults.outlinedTextFieldColors(
-                                                focusedBorderColor = Color(0xFF4CAF50),
-                                                unfocusedBorderColor = Color.Gray,
-                                                focusedLabelColor = Color(0xFF4CAF50),
-                                                unfocusedLabelColor = Color.Gray
+                                                focusedBorderColor = Color(0xFF6495ED).copy(alpha = 0.7f),
+                                                unfocusedBorderColor = Color(0xFF6495ED).copy(alpha = 0.7f),
+                                                disabledBorderColor = Color(0xFF6495ED).copy(alpha = 0.7f),
+                                                errorBorderColor = Color(0xFF6495ED).copy(alpha = 0.7f),
+                                                focusedLabelColor = Color(0xFF6495ED).copy(alpha = 0.7f),
+                                                unfocusedLabelColor = Color(0xFF6495ED).copy(alpha = 0.7f)
                                             ),
                                             modifier = Modifier.fillMaxWidth(),
-                                            keyboardOptions = KeyboardOptions(imeAction = ImeAction.Next),
+                                            keyboardOptions = KeyboardOptions(
+                                                keyboardType = KeyboardType.Text,
+                                                imeAction = ImeAction.Next
+                                            ),
                                             keyboardActions = KeyboardActions(
                                                 onNext = { focusManager.moveFocus(FocusDirection.Down) }
                                             )
@@ -351,51 +386,39 @@ fun MaintenanceScreen(
 
                                 OutlinedTextField(
                                     value = newCost,
-                                    onValueChange = { if (it.all { it.isDigit() || it == '.' } || it.isEmpty()) newCost = it },
+                                    onValueChange = {
+                                        if (it.all { it.isDigit() || it == '.' } || it.isEmpty()) newCost = it
+                                    },
                                     label = { Text("Стоимость (руб)") },
                                     modifier = Modifier.fillMaxWidth(),
                                     keyboardOptions = KeyboardOptions(
                                         keyboardType = KeyboardType.Decimal,
                                         imeAction = ImeAction.Done
                                     ),
-                                    colors = TextFieldDefaults.outlinedTextFieldColors(
-                                        focusedBorderColor = Color(0xFF4CAF50),
-                                        unfocusedBorderColor = Color.Gray,
-                                        focusedLabelColor = Color(0xFF4CAF50),
-                                        unfocusedLabelColor = Color.Gray
-                                    ),
-                                    trailingIcon = {
-                                        Icon(
-                                            imageVector = Icons.Default.ArrowForward,
-                                            contentDescription = "Add",
-                                            tint = Color(0xFF4CAF50),
-                                            modifier = Modifier
-                                                .clickable {
-                                                    if (newName.isNotEmpty() && newWorkType.isNotEmpty() && newDate.isNotEmpty() && newCost.isNotEmpty()) {
-                                                        logsState.value = logsState.value + MaintenanceLog(newName, newWorkType, newDate, newCost)
-                                                        showAddCard = false
-                                                        focusManager.clearFocus()
-                                                    } else {
-                                                        scope.launch {
-                                                            scaffoldState.snackbarHostState.showSnackbar("Заполните все поля")
-                                                        }
-                                                    }
-                                                }
-                                                .size(24.dp)
-                                        )
-                                    },
                                     keyboardActions = KeyboardActions(
                                         onDone = {
                                             if (newName.isNotEmpty() && newWorkType.isNotEmpty() && newDate.isNotEmpty() && newCost.isNotEmpty()) {
-                                                logsState.value = logsState.value + MaintenanceLog(newName, newWorkType, newDate, newCost)
+                                                logsState.value += MaintenanceLog(newName, newWorkType, newDate, newCost)
                                                 showAddCard = false
                                                 focusManager.clearFocus()
                                             } else {
                                                 scope.launch {
-                                                    scaffoldState.snackbarHostState.showSnackbar("Заполните все поля")
+                                                    scaffoldState.snackbarHostState.showSnackbar(
+                                                        message = "Заполните все поля",
+                                                        duration = SnackbarDuration.Short
+                                                    )
                                                 }
                                             }
+                                            focusManager.clearFocus()
                                         }
+                                    ),
+                                    colors = TextFieldDefaults.outlinedTextFieldColors(
+                                        focusedBorderColor = Color(0xFF6495ED).copy(alpha = 0.7f),
+                                        unfocusedBorderColor = Color(0xFF6495ED).copy(alpha = 0.7f),
+                                        disabledBorderColor = Color(0xFF6495ED).copy(alpha = 0.7f),
+                                        errorBorderColor = Color(0xFF6495ED).copy(alpha = 0.7f),
+                                        focusedLabelColor = Color(0xFF6495ED).copy(alpha = 0.7f),
+                                        unfocusedLabelColor = Color(0xFF6495ED).copy(alpha = 0.7f)
                                     )
                                 )
                                 Spacer(modifier = Modifier.height(8.dp))
@@ -413,7 +436,10 @@ fun MaintenanceScreen(
                                                 showAddCard = false
                                             } else {
                                                 scope.launch {
-                                                    scaffoldState.snackbarHostState.showSnackbar("Заполните все поля")
+                                                    scaffoldState.snackbarHostState.showSnackbar(
+                                                        message = "Заполните все поля",
+                                                        duration = SnackbarDuration.Short
+                                                    )
                                                 }
                                             }
                                         },
@@ -512,14 +538,20 @@ fun MaintenanceScreen(
             title = { Text(selectedLog!!.name) },
             text = {
                 Column {
-                    Text("Тип работ: ${selectedLog!!.workType}", style = MaterialTheme.typography.body1)
+                    Text(
+                        "Тип работ: ${selectedLog!!.workType}",
+                        style = MaterialTheme.typography.body1
+                    )
                     Spacer(modifier = Modifier.height(8.dp))
                     Row(
                         modifier = Modifier.fillMaxWidth(),
                         horizontalArrangement = Arrangement.SpaceBetween
                     ) {
                         Text("Дата: ${selectedLog!!.date}", style = MaterialTheme.typography.body2)
-                        Text("Стоимость: ${selectedLog!!.cost} руб", style = MaterialTheme.typography.body2)
+                        Text(
+                            "Стоимость: ${selectedLog!!.cost} руб",
+                            style = MaterialTheme.typography.body2
+                        )
                     }
                 }
             },
@@ -552,32 +584,59 @@ fun MaintenanceScreen(
             title = { Text("Фильтрация") },
             text = {
                 Column {
-                    OutlinedTextField(
-                        value = tempFilterWorkType,
-                        onValueChange = { tempFilterWorkType = it },
-                        label = { Text("Тип работ", color = Color.White) },
-                        modifier = Modifier.fillMaxWidth(),
-                        colors = TextFieldDefaults.outlinedTextFieldColors(
-                            focusedBorderColor = Color(0xFF4CAF50),
-                            unfocusedBorderColor = Color.Gray,
-                            focusedLabelColor = Color.White,
-                            unfocusedLabelColor = Color.White
-                        ),
-                        trailingIcon = {
-                            Icon(
-                                imageVector = Icons.Default.ArrowForward,
-                                contentDescription = "Next",
-                                tint = Color(0xFF4CAF50),
-                                modifier = Modifier
-                                    .clickable { focusManager.moveFocus(FocusDirection.Down) }
-                                    .size(24.dp)
+                    var filterExpanded by remember { mutableStateOf(false) }
+                    val workTypeOptions =
+                        listOf("", "замена", "покупка", "ремонт") // "" для сброса фильтра
+
+                    Box(modifier = Modifier.fillMaxWidth()) {
+                        ExposedDropdownMenuBox(
+                            expanded = filterExpanded,
+                            onExpandedChange = { filterExpanded = !filterExpanded }
+                        ) {
+                            OutlinedTextField(
+                                value = tempFilterWorkType,
+                                onValueChange = { tempFilterWorkType = it },
+                                label = { Text("Тип работ", color = Color.White) },
+                                readOnly = true,
+                                trailingIcon = {
+                                    Icon(
+                                        imageVector = Icons.Default.KeyboardArrowDown,
+                                        contentDescription = "Выберите тип",
+                                        tint = Color(0xFF4CAF50),
+                                        modifier = Modifier
+                                            .clickable { filterExpanded = !filterExpanded }
+                                            .size(24.dp)
+                                    )
+                                },
+                                colors = TextFieldDefaults.outlinedTextFieldColors(
+                                    focusedBorderColor = Color(0xFF4CAF50),
+                                    unfocusedBorderColor = Color.Gray,
+                                    focusedLabelColor = Color.White,
+                                    unfocusedLabelColor = Color.White
+                                ),
+                                modifier = Modifier.fillMaxWidth(),
+                                keyboardOptions = KeyboardOptions(imeAction = ImeAction.Next),
+                                keyboardActions = KeyboardActions(
+                                    onNext = { focusManager.moveFocus(FocusDirection.Down) }
+                                )
                             )
-                        },
-                        keyboardOptions = KeyboardOptions(imeAction = ImeAction.Next),
-                        keyboardActions = KeyboardActions(
-                            onNext = { focusManager.moveFocus(FocusDirection.Down) }
-                        )
-                    )
+                            ExposedDropdownMenu(
+                                expanded = filterExpanded,
+                                onDismissRequest = { filterExpanded = false }
+                            ) {
+                                workTypeOptions.forEach { option ->
+                                    DropdownMenuItem(
+                                        onClick = {
+                                            tempFilterWorkType = option
+                                            filterExpanded = false
+                                            focusManager.moveFocus(FocusDirection.Down)
+                                        },
+                                        content = { Text(text = if (option.isEmpty()) "Все" else option) }
+                                    )
+                                }
+                            }
+                        }
+                    }
                     Spacer(modifier = Modifier.height(8.dp))
                     DateInputField(
                         label = "Дата от",
