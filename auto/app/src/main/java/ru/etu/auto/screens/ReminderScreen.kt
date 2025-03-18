@@ -3,50 +3,26 @@ package ru.etu.auto.screens
 import android.util.Log
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
-import androidx.compose.material.AlertDialog
-import androidx.compose.material.Button
-import androidx.compose.material.ButtonDefaults
-import androidx.compose.material.Card
-import androidx.compose.material.Icon
-import androidx.compose.material.MaterialTheme
-import androidx.compose.material.OutlinedTextField
-import androidx.compose.material.Scaffold
-import androidx.compose.material.Text
-import androidx.compose.material.TextButton
-import androidx.compose.material.TextFieldDefaults
+import androidx.compose.material.*
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Build
 import androidx.compose.material.icons.filled.KeyboardArrowDown
 import androidx.compose.material.icons.filled.KeyboardArrowUp
-import androidx.compose.material.rememberScaffoldState
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.MutableState
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.rememberCoroutineScope
-import androidx.compose.runtime.setValue
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.focus.FocusDirection
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardCapitalization
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
@@ -75,13 +51,11 @@ fun ReminderScreen(
         InfoDialog { showInfo = false }
     }
 
-    // Промежуточные переменные для фильтров
     var tempFilterStartDate by remember { mutableStateOf("") }
     var tempFilterEndDate by remember { mutableStateOf("") }
     var tempFilterMinMileage by remember { mutableStateOf("") }
     var tempFilterMaxMileage by remember { mutableStateOf("") }
 
-    // Финальные переменные для фильтров
     var filterStartDate by remember { mutableStateOf("") }
     var filterEndDate by remember { mutableStateOf("") }
     var filterMinMileage by remember { mutableStateOf("") }
@@ -94,6 +68,7 @@ fun ReminderScreen(
     var isMileageAscending by remember { mutableStateOf(true) }
 
     val formatter = DateTimeFormatter.ofPattern("dd.MM.yyyy")
+    val focusManager = LocalFocusManager.current
 
     val filteredReminders = remindersState.value.filter { reminder ->
         val repairDate = LocalDate.parse(reminder.repairDate, formatter)
@@ -110,7 +85,6 @@ fun ReminderScreen(
     val scaffoldState = rememberScaffoldState()
     val scope = rememberCoroutineScope()
 
-    // Сортировка по дате при первом рендере
     LaunchedEffect(Unit) {
         remindersState.value = remindersState.value.sortedBy {
             LocalDate.parse(it.repairDate, formatter)
@@ -137,11 +111,8 @@ fun ReminderScreen(
             ) {
                 Box(
                     modifier = Modifier
-                        .padding(start = 32.dp) // Дополнительный отступ слева
-                        .background(
-                            color = Color.Gray,
-                            shape = RoundedCornerShape(4.dp)
-                        )
+                        .padding(start = 32.dp)
+                        .background(Color.Gray, RoundedCornerShape(4.dp))
                         .clickable {
                             filterStartDate = ""
                             filterEndDate = ""
@@ -154,16 +125,11 @@ fun ReminderScreen(
                 }
                 Box(
                     modifier = Modifier
-                        .background(
-                            color = getColorFromResources(R.color.main_color),
-                            shape = RoundedCornerShape(4.dp)
-                        )
+                        .background(getColorFromResources(R.color.main_color), RoundedCornerShape(4.dp))
                         .clickable { showFilterDialog = true }
                         .padding(horizontal = 16.dp, vertical = 8.dp)
                 ) {
-                    Row(
-                        verticalAlignment = Alignment.CenterVertically
-                    ) {
+                    Row(verticalAlignment = Alignment.CenterVertically) {
                         Text(text = "Фильтр", color = Color.White)
                         Spacer(modifier = Modifier.width(8.dp))
                         Icon(
@@ -192,21 +158,13 @@ fun ReminderScreen(
                     Spacer(modifier = Modifier.width(8.dp))
                     Row(
                         modifier = Modifier
-                            .background(
-                                color = getColorFromResources(R.color.main_color),
-                                shape = RoundedCornerShape(4.dp)
-                            )
+                            .background(getColorFromResources(R.color.main_color), RoundedCornerShape(4.dp))
                             .clickable {
                                 isDateAscending = !isDateAscending
-                                val formatter = DateTimeFormatter.ofPattern("dd.MM.yyyy")
                                 remindersState.value = if (isDateAscending) {
-                                    remindersState.value.sortedBy {
-                                        LocalDate.parse(it.repairDate, formatter)
-                                    }
+                                    remindersState.value.sortedBy { LocalDate.parse(it.repairDate, formatter) }
                                 } else {
-                                    remindersState.value.sortedByDescending {
-                                        LocalDate.parse(it.repairDate, formatter)
-                                    }
+                                    remindersState.value.sortedByDescending { LocalDate.parse(it.repairDate, formatter) }
                                 }
                             }
                             .padding(horizontal = 8.dp, vertical = 4.dp),
@@ -224,10 +182,7 @@ fun ReminderScreen(
                     Spacer(modifier = Modifier.width(8.dp))
                     Row(
                         modifier = Modifier
-                            .background(
-                                color = getColorFromResources(R.color.main_color),
-                                shape = RoundedCornerShape(4.dp)
-                            )
+                            .background(getColorFromResources(R.color.main_color), RoundedCornerShape(4.dp))
                             .clickable {
                                 isMileageAscending = !isMileageAscending
                                 remindersState.value = if (isMileageAscending) {
@@ -300,9 +255,7 @@ fun ReminderScreen(
                                 DateInputField(
                                     label = "Дата",
                                     date = repairDate,
-                                    modifier = Modifier
-                                        .fillMaxWidth()
-                                        .padding(top = 4.dp),
+                                    modifier = Modifier.fillMaxWidth().padding(top = 4.dp),
                                     onDateSelected = { repairDate = it }
                                 )
                                 Spacer(modifier = Modifier.height(8.dp))
@@ -315,12 +268,8 @@ fun ReminderScreen(
                                         }
                                     },
                                     label = { Text("Пробег (км), опционально") },
-                                    modifier = Modifier
-                                        .fillMaxWidth()
-                                        .padding(top = 4.dp),
-                                    keyboardOptions = KeyboardOptions(
-                                        keyboardType = KeyboardType.Number
-                                    ),
+                                    modifier = Modifier.fillMaxWidth().padding(top = 4.dp),
+                                    keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
                                     colors = TextFieldDefaults.outlinedTextFieldColors(
                                         focusedBorderColor = Color(0xFF6495ED).copy(alpha = 0.7f),
                                         unfocusedBorderColor = Color(0xFF6495ED).copy(alpha = 0.7f),
@@ -363,7 +312,7 @@ fun ReminderScreen(
                                             if (title.isNotEmpty() && repairDate.isNotEmpty()) {
                                                 remindersState.value = remindersState.value + Reminder(
                                                     title = title,
-                                                    dateAdded = LocalDate.now().format(DateTimeFormatter.ofPattern("dd.MM.yyyy")),
+                                                    dateAdded = LocalDate.now().format(formatter),
                                                     repairDate = repairDate,
                                                     description = description,
                                                     mileage = mileage.toIntOrNull() ?: 0
@@ -397,7 +346,6 @@ fun ReminderScreen(
                     }
                 }
                 items(filteredReminders) { reminder ->
-                    val formatter = DateTimeFormatter.ofPattern("dd.MM.yyyy")
                     val currentDate = LocalDate.now()
                     val repairDate = LocalDate.parse(reminder.repairDate, formatter)
                     val daysUntilRepair = ChronoUnit.DAYS.between(currentDate, repairDate).toInt()
@@ -546,13 +494,15 @@ fun ReminderScreen(
                     DateInputField(
                         label = "Дата от",
                         date = tempFilterStartDate,
-                        onDateSelected = { tempFilterStartDate = it }
+                        onDateSelected = { tempFilterStartDate = it },
+                        modifier = Modifier.fillMaxWidth()
                     )
                     Spacer(modifier = Modifier.height(8.dp))
                     DateInputField(
                         label = "Дата до",
                         date = tempFilterEndDate,
-                        onDateSelected = { tempFilterEndDate = it }
+                        onDateSelected = { tempFilterEndDate = it },
+                        modifier = Modifier.fillMaxWidth()
                     )
                     Spacer(modifier = Modifier.height(8.dp))
                     OutlinedTextField(
@@ -563,7 +513,13 @@ fun ReminderScreen(
                             }
                         },
                         label = { Text("Минимальный пробег (км)") },
-                        keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
+                        keyboardOptions = KeyboardOptions(
+                            keyboardType = KeyboardType.Number,
+                            imeAction = ImeAction.Next
+                        ),
+                        keyboardActions = KeyboardActions(
+                            onNext = { focusManager.moveFocus(FocusDirection.Down) }
+                        ),
                         modifier = Modifier.fillMaxWidth(),
                         colors = TextFieldDefaults.outlinedTextFieldColors(
                             focusedBorderColor = Color(0xFF6495ED).copy(alpha = 0.7f),
@@ -583,7 +539,20 @@ fun ReminderScreen(
                             }
                         },
                         label = { Text("Максимальный пробег (км)") },
-                        keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
+                        keyboardOptions = KeyboardOptions(
+                            keyboardType = KeyboardType.Number,
+                            imeAction = ImeAction.Done
+                        ),
+                        keyboardActions = KeyboardActions(
+                            onDone = {
+                                filterStartDate = tempFilterStartDate
+                                filterEndDate = tempFilterEndDate
+                                filterMinMileage = tempFilterMinMileage
+                                filterMaxMileage = tempFilterMaxMileage
+                                showFilterDialog = false
+                                focusManager.clearFocus()
+                            }
+                        ),
                         modifier = Modifier.fillMaxWidth(),
                         colors = TextFieldDefaults.outlinedTextFieldColors(
                             focusedBorderColor = Color(0xFF6495ED).copy(alpha = 0.7f),
@@ -604,9 +573,9 @@ fun ReminderScreen(
                     horizontalArrangement = Arrangement.SpaceBetween
                 ) {
                     Button(
-                        onClick = { showFilterDialog = false }, // "Назад" слева
+                        onClick = { showFilterDialog = false },
                         colors = ButtonDefaults.buttonColors(
-                            backgroundColor = Color(0xFF757575), // Нейтральный серый
+                            backgroundColor = Color(0xFF757575),
                             contentColor = Color.White
                         ),
                         elevation = ButtonDefaults.elevation(0.dp)
@@ -624,9 +593,9 @@ fun ReminderScreen(
                             filterMinMileage = tempFilterMinMileage
                             filterMaxMileage = tempFilterMaxMileage
                             showFilterDialog = false
-                        }, // "Применить" справа
+                        },
                         colors = ButtonDefaults.buttonColors(
-                            backgroundColor = Color(0xFF4CAF50), // Мягкий зелёный
+                            backgroundColor = Color(0xFF4CAF50),
                             contentColor = Color.White
                         ),
                         elevation = ButtonDefaults.elevation(0.dp)
@@ -639,7 +608,7 @@ fun ReminderScreen(
                     }
                 }
             },
-            dismissButton = {},
+            dismissButton = {}
         )
     }
 }
