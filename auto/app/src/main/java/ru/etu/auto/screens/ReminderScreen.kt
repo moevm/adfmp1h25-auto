@@ -120,8 +120,8 @@ fun ReminderScreen(
                             filterEndDate = ""
                             filterMinMileage = ""
                             filterMaxMileage = ""
-                            appliedSearchQuery = "" // Сбрасываем поиск
-                            searchQuery = "" // Очищаем поле ввода поиска
+                            appliedSearchQuery = ""
+                            searchQuery = ""
                         }
                         .padding(horizontal = 16.dp, vertical = 8.dp)
                 ) {
@@ -257,9 +257,33 @@ fun ReminderScreen(
                                 var mileage by remember { mutableStateOf("") }
                                 var description by remember { mutableStateOf("") }
 
+                                // Состояния для ошибок валидации
+                                var titleError by remember { mutableStateOf(false) }
+                                var dateError by remember { mutableStateOf(false) }
+
+                                // Функция валидации и добавления
+                                fun validateAndAdd() {
+                                    titleError = title.isEmpty()
+                                    dateError = repairDate.isEmpty()
+
+                                    if (!titleError && !dateError) {
+                                        remindersState.value = remindersState.value + Reminder(
+                                            title = title,
+                                            dateAdded = LocalDate.now().format(formatter),
+                                            repairDate = repairDate,
+                                            description = description,
+                                            mileage = mileage.toIntOrNull() ?: 0
+                                        )
+                                        showAddCard = false
+                                    }
+                                }
+
                                 OutlinedTextField(
                                     value = title,
-                                    onValueChange = { title = it },
+                                    onValueChange = {
+                                        title = it
+                                        titleError = false // Убираем ошибку при вводе
+                                    },
                                     label = { Text("Заголовок") },
                                     keyboardOptions = KeyboardOptions(
                                         capitalization = KeyboardCapitalization.Words,
@@ -279,16 +303,33 @@ fun ReminderScreen(
                                     ),
                                     modifier = Modifier.fillMaxWidth()
                                 )
-
+                                if (titleError) {
+                                    Text(
+                                        text = "Поле не заполнено",
+                                        color = Color.Red,
+                                        style = MaterialTheme.typography.caption,
+                                        modifier = Modifier.padding(start = 16.dp, top = 4.dp)
+                                    )
+                                }
                                 Spacer(modifier = Modifier.height(8.dp))
 
                                 DateInputField(
                                     label = "Дата",
                                     date = repairDate,
                                     modifier = Modifier.fillMaxWidth().padding(top = 4.dp),
-                                    onDateSelected = { repairDate = it }
+                                    onDateSelected = {
+                                        repairDate = it
+                                        dateError = false // Убираем ошибку при выборе даты
+                                    }
                                 )
-
+                                if (dateError) {
+                                    Text(
+                                        text = "Поле не заполнено",
+                                        color = Color.Red,
+                                        style = MaterialTheme.typography.caption,
+                                        modifier = Modifier.padding(start = 16.dp, top = 4.dp)
+                                    )
+                                }
                                 Spacer(modifier = Modifier.height(8.dp))
 
                                 OutlinedTextField(
@@ -316,7 +357,6 @@ fun ReminderScreen(
                                         unfocusedLabelColor = Color(0xFF6495ED).copy(alpha = 0.7f)
                                     )
                                 )
-
                                 Spacer(modifier = Modifier.height(8.dp))
 
                                 OutlinedTextField(
@@ -329,7 +369,10 @@ fun ReminderScreen(
                                         imeAction = ImeAction.Done
                                     ),
                                     keyboardActions = KeyboardActions(
-                                        onDone = { focusManager.clearFocus() }
+                                        onDone = {
+                                            validateAndAdd()
+                                            focusManager.clearFocus()
+                                        }
                                     ),
                                     colors = TextFieldDefaults.outlinedTextFieldColors(
                                         focusedBorderColor = Color(0xFF6495ED).copy(alpha = 0.7f),
@@ -350,24 +393,7 @@ fun ReminderScreen(
                                     horizontalArrangement = Arrangement.SpaceBetween
                                 ) {
                                     Button(
-                                        onClick = {
-                                            if (title.isNotEmpty() && repairDate.isNotEmpty()) {
-                                                remindersState.value = remindersState.value + Reminder(
-                                                    title = title,
-                                                    dateAdded = LocalDate.now().format(formatter),
-                                                    repairDate = repairDate,
-                                                    description = description,
-                                                    mileage = mileage.toIntOrNull() ?: 0
-                                                )
-                                                showAddCard = false
-                                            } else {
-                                                scope.launch {
-                                                    scaffoldState.snackbarHostState.showSnackbar(
-                                                        "Заполните необходимые поля: Заголовок и Дата"
-                                                    )
-                                                }
-                                            }
-                                        },
+                                        onClick = { validateAndAdd() },
                                         colors = ButtonDefaults.buttonColors(
                                             backgroundColor = getColorFromResources(R.color.green)
                                         )

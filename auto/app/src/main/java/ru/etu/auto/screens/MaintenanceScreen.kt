@@ -74,24 +74,12 @@ fun MaintenanceScreen(
         } catch (e: Exception) {
             LocalDate.MIN
         }
-        val startDate = if (filterStartDate.isNotEmpty()) LocalDate.parse(
-            filterStartDate,
-            formatter
-        ) else LocalDate.MIN
-        val endDate = if (filterEndDate.isNotEmpty()) LocalDate.parse(
-            filterEndDate,
-            formatter
-        ) else LocalDate.MAX
+        val startDate = if (filterStartDate.isNotEmpty()) LocalDate.parse(filterStartDate, formatter) else LocalDate.MIN
+        val endDate = if (filterEndDate.isNotEmpty()) LocalDate.parse(filterEndDate, formatter) else LocalDate.MAX
         val logCost = log.cost.filter { it.isDigit() || it == '.' }.toFloatOrNull() ?: 0f
 
-        (appliedSearchQuery.isEmpty() || log.name.contains(
-            appliedSearchQuery,
-            ignoreCase = true
-        ) || log.workType.contains(appliedSearchQuery, ignoreCase = true)) &&
-                (filterWorkType.isEmpty() || log.workType.contains(
-                    filterWorkType,
-                    ignoreCase = true
-                )) &&
+        (appliedSearchQuery.isEmpty() || log.name.contains(appliedSearchQuery, ignoreCase = true) || log.workType.contains(appliedSearchQuery, ignoreCase = true)) &&
+                (filterWorkType.isEmpty() || log.workType.contains(filterWorkType, ignoreCase = true)) &&
                 (logDate >= startDate && logDate <= endDate) &&
                 (filterCost == 0f || logCost <= filterCost)
     }
@@ -129,8 +117,8 @@ fun MaintenanceScreen(
                             filterStartDate = ""
                             filterEndDate = ""
                             filterCost = 0f
-                            appliedSearchQuery = "" // Сбрасываем поиск
-                            searchQuery = "" // Очищаем поле ввода поиска
+                            appliedSearchQuery = ""
+                            searchQuery = ""
                         }
                         .padding(horizontal = 16.dp, vertical = 8.dp)
                 ) {
@@ -138,10 +126,7 @@ fun MaintenanceScreen(
                 }
                 Box(
                     modifier = Modifier
-                        .background(
-                            getColorFromResources(R.color.main_color),
-                            RoundedCornerShape(4.dp)
-                        )
+                        .background(getColorFromResources(R.color.main_color), RoundedCornerShape(4.dp))
                         .clickable { showFilterDialog = true }
                         .padding(horizontal = 16.dp, vertical = 8.dp)
                 ) {
@@ -174,21 +159,13 @@ fun MaintenanceScreen(
                     Spacer(modifier = Modifier.width(8.dp))
                     Row(
                         modifier = Modifier
-                            .background(
-                                getColorFromResources(R.color.main_color),
-                                RoundedCornerShape(4.dp)
-                            )
+                            .background(getColorFromResources(R.color.main_color), RoundedCornerShape(4.dp))
                             .clickable {
                                 isDateAscending = !isDateAscending
                                 logsState.value = if (isDateAscending) {
                                     filteredLogs.sortedBy { LocalDate.parse(it.date, formatter) }
                                 } else {
-                                    filteredLogs.sortedByDescending {
-                                        LocalDate.parse(
-                                            it.date,
-                                            formatter
-                                        )
-                                    }
+                                    filteredLogs.sortedByDescending { LocalDate.parse(it.date, formatter) }
                                 }
                             }
                             .padding(horizontal = 8.dp, vertical = 4.dp),
@@ -205,22 +182,13 @@ fun MaintenanceScreen(
                     Spacer(modifier = Modifier.width(8.dp))
                     Row(
                         modifier = Modifier
-                            .background(
-                                getColorFromResources(R.color.main_color),
-                                RoundedCornerShape(4.dp)
-                            )
+                            .background(getColorFromResources(R.color.main_color), RoundedCornerShape(4.dp))
                             .clickable {
                                 isCostAscending = !isCostAscending
                                 logsState.value = if (isCostAscending) {
-                                    filteredLogs.sortedBy {
-                                        it.cost.filter { it.isDigit() || it == '.' }.toFloatOrNull()
-                                            ?: 0f
-                                    }
+                                    filteredLogs.sortedBy { it.cost.filter { it.isDigit() || it == '.' }.toFloatOrNull() ?: 0f }
                                 } else {
-                                    filteredLogs.sortedByDescending {
-                                        it.cost.filter { it.isDigit() || it == '.' }.toFloatOrNull()
-                                            ?: 0f
-                                    }
+                                    filteredLogs.sortedByDescending { it.cost.filter { it.isDigit() || it == '.' }.toFloatOrNull() ?: 0f }
                                 }
                             }
                             .padding(horizontal = 8.dp, vertical = 4.dp),
@@ -239,12 +207,7 @@ fun MaintenanceScreen(
                 OutlinedTextField(
                     value = searchQuery,
                     onValueChange = { searchQuery = it },
-                    placeholder = {
-                        Text(
-                            text = "Поиск",
-                            color = getColorFromResources(R.color.main_color)
-                        )
-                    },
+                    placeholder = { Text(text = "Поиск", color = getColorFromResources(R.color.main_color)) },
                     modifier = Modifier.fillMaxWidth(),
                     colors = TextFieldDefaults.outlinedTextFieldColors(
                         focusedBorderColor = getColorFromResources(R.color.main_color),
@@ -292,11 +255,33 @@ fun MaintenanceScreen(
                                 var newCost by remember { mutableStateOf("") }
                                 var expanded by remember { mutableStateOf(false) }
 
+                                // Состояния для ошибок валидации
+                                var nameError by remember { mutableStateOf(false) }
+                                var workTypeError by remember { mutableStateOf(false) }
+                                var dateError by remember { mutableStateOf(false) }
+                                var costError by remember { mutableStateOf(false) }
+
                                 val workTypeOptions = listOf("Замена", "Покупка", "Ремонт")
+
+                                // Функция валидации и добавления
+                                fun validateAndAdd() {
+                                    nameError = newName.isEmpty()
+                                    workTypeError = newWorkType.isEmpty()
+                                    dateError = newDate.isEmpty()
+                                    costError = newCost.isEmpty()
+
+                                    if (!nameError && !workTypeError && !dateError && !costError) {
+                                        logsState.value = logsState.value + MaintenanceLog(newName, newWorkType, newDate, newCost)
+                                        showAddCard = false
+                                    }
+                                }
 
                                 OutlinedTextField(
                                     value = newName,
-                                    onValueChange = { newName = it },
+                                    onValueChange = {
+                                        newName = it
+                                        nameError = false // Убираем ошибку при вводе
+                                    },
                                     label = { Text("Название") },
                                     modifier = Modifier.fillMaxWidth(),
                                     colors = TextFieldDefaults.outlinedTextFieldColors(
@@ -315,10 +300,18 @@ fun MaintenanceScreen(
                                     keyboardActions = KeyboardActions(
                                         onNext = {
                                             focusManager.moveFocus(FocusDirection.Down)
-                                            expanded = true // Открываем выпадающий список
+                                            expanded = true
                                         }
                                     )
                                 )
+                                if (nameError) {
+                                    Text(
+                                        text = "Поле не заполнено",
+                                        color = Color.Red,
+                                        style = MaterialTheme.typography.caption,
+                                        modifier = Modifier.padding(start = 16.dp, top = 4.dp)
+                                    )
+                                }
                                 Spacer(modifier = Modifier.height(8.dp))
 
                                 Box(modifier = Modifier.fillMaxWidth()) {
@@ -328,7 +321,10 @@ fun MaintenanceScreen(
                                     ) {
                                         OutlinedTextField(
                                             value = newWorkType,
-                                            onValueChange = { newWorkType = it },
+                                            onValueChange = {
+                                                newWorkType = it
+                                                workTypeError = false // Убираем ошибку при вводе
+                                            },
                                             label = { Text("Тип работ") },
                                             readOnly = true,
                                             trailingIcon = {
@@ -365,6 +361,7 @@ fun MaintenanceScreen(
                                                 DropdownMenuItem(
                                                     onClick = {
                                                         newWorkType = option
+                                                        workTypeError = false // Убираем ошибку при выборе
                                                         expanded = false
                                                         focusManager.moveFocus(FocusDirection.Down)
                                                     },
@@ -374,20 +371,42 @@ fun MaintenanceScreen(
                                         }
                                     }
                                 }
+                                if (workTypeError) {
+                                    Text(
+                                        text = "Поле не заполнено",
+                                        color = Color.Red,
+                                        style = MaterialTheme.typography.caption,
+                                        modifier = Modifier.padding(start = 16.dp, top = 4.dp)
+                                    )
+                                }
                                 Spacer(modifier = Modifier.height(8.dp))
 
                                 DateInputField(
                                     label = "Дата",
                                     date = newDate,
-                                    onDateSelected = { newDate = it },
+                                    onDateSelected = {
+                                        newDate = it
+                                        dateError = false // Убираем ошибку при выборе даты
+                                    },
                                     modifier = Modifier.fillMaxWidth()
                                 )
+                                if (dateError) {
+                                    Text(
+                                        text = "Поле не заполнено",
+                                        color = Color.Red,
+                                        style = MaterialTheme.typography.caption,
+                                        modifier = Modifier.padding(start = 16.dp, top = 4.dp)
+                                    )
+                                }
                                 Spacer(modifier = Modifier.height(8.dp))
 
                                 OutlinedTextField(
                                     value = newCost,
                                     onValueChange = {
-                                        if (it.all { it.isDigit() || it == '.' } || it.isEmpty()) newCost = it
+                                        if (it.all { it.isDigit() || it == '.' } || it.isEmpty()) {
+                                            newCost = it
+                                            costError = false // Убираем ошибку при вводе
+                                        }
                                     },
                                     label = { Text("Стоимость (руб)") },
                                     modifier = Modifier.fillMaxWidth(),
@@ -397,18 +416,7 @@ fun MaintenanceScreen(
                                     ),
                                     keyboardActions = KeyboardActions(
                                         onDone = {
-                                            if (newName.isNotEmpty() && newWorkType.isNotEmpty() && newDate.isNotEmpty() && newCost.isNotEmpty()) {
-                                                logsState.value += MaintenanceLog(newName, newWorkType, newDate, newCost)
-                                                showAddCard = false
-                                                focusManager.clearFocus()
-                                            } else {
-                                                scope.launch {
-                                                    scaffoldState.snackbarHostState.showSnackbar(
-                                                        message = "Заполните все поля",
-                                                        duration = SnackbarDuration.Short
-                                                    )
-                                                }
-                                            }
+                                            validateAndAdd()
                                             focusManager.clearFocus()
                                         }
                                     ),
@@ -421,6 +429,14 @@ fun MaintenanceScreen(
                                         unfocusedLabelColor = Color(0xFF6495ED).copy(alpha = 0.7f)
                                     )
                                 )
+                                if (costError) {
+                                    Text(
+                                        text = "Поле не заполнено",
+                                        color = Color.Red,
+                                        style = MaterialTheme.typography.caption,
+                                        modifier = Modifier.padding(start = 16.dp, top = 4.dp)
+                                    )
+                                }
                                 Spacer(modifier = Modifier.height(8.dp))
 
                                 Row(
@@ -430,19 +446,7 @@ fun MaintenanceScreen(
                                     horizontalArrangement = Arrangement.SpaceBetween
                                 ) {
                                     Button(
-                                        onClick = {
-                                            if (newName.isNotEmpty() && newWorkType.isNotEmpty() && newDate.isNotEmpty() && newCost.isNotEmpty()) {
-                                                logsState.value = logsState.value + MaintenanceLog(newName, newWorkType, newDate, newCost)
-                                                showAddCard = false
-                                            } else {
-                                                scope.launch {
-                                                    scaffoldState.snackbarHostState.showSnackbar(
-                                                        message = "Заполните все поля",
-                                                        duration = SnackbarDuration.Short
-                                                    )
-                                                }
-                                            }
-                                        },
+                                        onClick = { validateAndAdd() },
                                         colors = ButtonDefaults.buttonColors(backgroundColor = Color(0xFF4CAF50))
                                     ) {
                                         Text("Добавить", color = Color.White)
@@ -538,20 +542,14 @@ fun MaintenanceScreen(
             title = { Text(selectedLog!!.name) },
             text = {
                 Column {
-                    Text(
-                        "Тип работ: ${selectedLog!!.workType}",
-                        style = MaterialTheme.typography.body1
-                    )
+                    Text("Тип работ: ${selectedLog!!.workType}", style = MaterialTheme.typography.body1)
                     Spacer(modifier = Modifier.height(8.dp))
                     Row(
                         modifier = Modifier.fillMaxWidth(),
                         horizontalArrangement = Arrangement.SpaceBetween
                     ) {
                         Text("Дата: ${selectedLog!!.date}", style = MaterialTheme.typography.body2)
-                        Text(
-                            "Стоимость: ${selectedLog!!.cost} руб",
-                            style = MaterialTheme.typography.body2
-                        )
+                        Text("Стоимость: ${selectedLog!!.cost} руб", style = MaterialTheme.typography.body2)
                     }
                 }
             },
@@ -585,8 +583,7 @@ fun MaintenanceScreen(
             text = {
                 Column {
                     var filterExpanded by remember { mutableStateOf(false) }
-                    val workTypeOptions =
-                        listOf("", "замена", "покупка", "ремонт") // "" для сброса фильтра
+                    val workTypeOptions = listOf("", "замена", "покупка", "ремонт")
 
                     Box(modifier = Modifier.fillMaxWidth()) {
                         ExposedDropdownMenuBox(
