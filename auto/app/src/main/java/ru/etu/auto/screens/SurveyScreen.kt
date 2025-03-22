@@ -4,41 +4,15 @@ import android.content.Context
 import android.widget.Toast
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.interaction.PressInteraction
-import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.IntrinsicSize
-import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.heightIn
-import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.material.Button
-import androidx.compose.material.ButtonDefaults
-import androidx.compose.material.DropdownMenu
-import androidx.compose.material.DropdownMenuItem
-import androidx.compose.material.Icon
-import androidx.compose.material.IconButton
-import androidx.compose.material.MaterialTheme
-import androidx.compose.material.OutlinedTextField
-import androidx.compose.material.Scaffold
-import androidx.compose.material.Text
-import androidx.compose.material.TextFieldDefaults
+import androidx.compose.material.*
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowDropDown
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.MutableState
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -49,6 +23,7 @@ import androidx.compose.ui.unit.dp
 import androidx.navigation.NavHostController
 import ru.etu.auto.components.CustomTopBar
 import ru.etu.auto.components.InfoDialog
+import ru.etu.auto.data.CarData
 import ru.etu.auto.models.SurveyData
 import ru.etu.auto.R
 import ru.etu.auto.shared.getColorFromResources
@@ -59,55 +34,34 @@ fun SurveyScreen(
     surveyDataState: MutableState<SurveyData?>
 ) {
     var showInfo by remember { mutableStateOf(false) }
-
     val context = LocalContext.current
     val sharedPreferences = context.getSharedPreferences("SurveyPrefs", Context.MODE_PRIVATE)
 
-    // Загрузка данных из SharedPreferences с значениями по умолчанию
-    var name by remember {
-        mutableStateOf(sharedPreferences.getString("name", "") ?: "")
-    }
-    var selectedKm by remember {
-        mutableStateOf(sharedPreferences.getString("avgKm", "0") ?: "0")
-    }
-    var selectedBrand by remember {
-        mutableStateOf(sharedPreferences.getString("brand", "Lada") ?: "Lada")
-    }
-    var selectedModel by remember {
-        mutableStateOf(sharedPreferences.getString("model", "Vesta") ?: "Vesta")
-    }
-    var year by remember {
-        mutableStateOf(sharedPreferences.getString("year", "2025") ?: "2025")
-    }
-    var mileage by remember {
-        mutableStateOf(sharedPreferences.getString("mileage", "0") ?: "0")
-    }
+    var name by remember { mutableStateOf(sharedPreferences.getString("name", "") ?: "") }
+    var selectedKm by remember { mutableStateOf(sharedPreferences.getString("avgKm", "0") ?: "0") }
+    var selectedBrand by remember { mutableStateOf(sharedPreferences.getString("brand", "Lada") ?: "Lada") }
+    var selectedModel by remember { mutableStateOf(sharedPreferences.getString("model", "Vesta") ?: "Vesta") }
+    var year by remember { mutableStateOf(sharedPreferences.getString("year", "2025") ?: "2025") }
+    var mileage by remember { mutableStateOf(sharedPreferences.getString("mileage", "0") ?: "0") }
 
-    // Варианты для выпадающих списков
-    val brandModels = mapOf(
-        "Lada" to listOf("Vesta", "Granta", "Niva"),
-        "Audi" to listOf("A3", "A4", "Q5"),
-        "Toyota" to listOf("Corolla", "Camry", "RAV4"),
-        "Volkswagen" to listOf("Golf", "Passat", "Tiguan"),
-        "Ford" to listOf("Focus", "Fiesta", "Explorer"),
-        "Honda" to listOf("Civic", "Accord", "CR-V"),
-        "Chevrolet" to listOf("Cruze", "Malibu", "Impala"),
-        "Mercedes-Benz" to listOf("C-Class", "E-Class", "S-Class"),
-        "BMW" to listOf("3 Series", "5 Series", "X3"),
-        "Nissan" to listOf("Sentra", "Altima", "Rogue"),
-        "Hyundai" to listOf("Elantra", "Sonata", "Tucson"),
-        "Kia" to listOf("Rio", "Optima", "Sportage"),
-        "Subaru" to listOf("Impreza", "Forester", "Outback")
-    )
-    val brands = brandModels.keys.toList().sorted()
-    val years = (1990..2025).map { it.toString() }.reversed() // Список годов от 2025 до 1990
+    // Состояния ошибок для каждого поля
+    var nameError by remember { mutableStateOf(false) }
+    var kmError by remember { mutableStateOf(false) }
+    var brandError by remember { mutableStateOf(false) }
+    var modelError by remember { mutableStateOf(false) }
+    var yearError by remember { mutableStateOf(false) }
+    var mileageError by remember { mutableStateOf(false) }
 
-    // Состояния для выпадающих меню
+    val brands = CarData.getBrands()
+    val models = CarData.getModelsForBrand(selectedBrand)
+    val years = (1990..2025).map { it.toString() }.reversed()
+
     var brandDropdownExpanded by remember { mutableStateOf(false) }
     var modelDropdownExpanded by remember { mutableStateOf(false) }
     var yearDropdownExpanded by remember { mutableStateOf(false) }
+    var brandSearchQuery by remember { mutableStateOf("") }
+    var modelSearchQuery by remember { mutableStateOf("") }
 
-    // Диалог информации
     if (showInfo) {
         InfoDialog { showInfo = false }
     }
@@ -117,15 +71,9 @@ fun SurveyScreen(
             CustomTopBar(
                 title = "",
                 showBackButton = true,
-                onBack = {
-                    navController.navigate("home") {
-                        popUpTo("home") {
-                            inclusive = true
-                        }
-                    }
-                },
+                onBack = { navController.navigate("home") { popUpTo("home") { inclusive = true } } },
                 onInfoClick = { showInfo = true },
-                onProfileClick = { }
+                onProfileClick = {}
             )
         }
     ) { innerPadding ->
@@ -134,20 +82,17 @@ fun SurveyScreen(
                 .fillMaxSize()
                 .padding(innerPadding)
                 .padding(16.dp)
-                .verticalScroll(rememberScrollState()), // Добавляем прокрутку
+                .verticalScroll(rememberScrollState()),
             verticalArrangement = Arrangement.spacedBy(12.dp)
         ) {
-// 1. Поле для ввода имени
+            // Имя
             Text("Имя")
             OutlinedTextField(
                 value = name,
-                onValueChange = { name = it },
+                onValueChange = { name = it; nameError = false },
                 label = { Text("Введите имя") },
                 modifier = Modifier.fillMaxWidth(),
-                keyboardOptions = KeyboardOptions(
-                    capitalization = KeyboardCapitalization.Words, // Первая буква каждого слова заглавная
-                    keyboardType = KeyboardType.Text // Оставляем текстовый тип ввода
-                ),
+                keyboardOptions = KeyboardOptions(capitalization = KeyboardCapitalization.Words, keyboardType = KeyboardType.Text),
                 colors = TextFieldDefaults.outlinedTextFieldColors(
                     focusedBorderColor = getColorFromResources(R.color.main_color),
                     unfocusedBorderColor = getColorFromResources(R.color.main_color),
@@ -156,30 +101,25 @@ fun SurveyScreen(
                     placeholderColor = Color.Black
                 )
             )
+            if (nameError) {
+                Text("Заполните поле", color = Color.Red, style = MaterialTheme.typography.caption)
+            }
 
-            // 2. Поле для ввода среднего пробега в месяц с шагом +5
+            // Средний пробег
             Text("Сколько в среднем км проезжает авто в месяц?")
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.spacedBy(8.dp),
                 verticalAlignment = Alignment.CenterVertically
             ) {
-                Button(
-                    onClick = {
-                        val currentKm = selectedKm.toIntOrNull() ?: 0
-                        if (currentKm >= 5) selectedKm = (currentKm - 5).toString()
-                    },
-                    modifier = Modifier.size(48.dp)
-                ) {
-                    Text("-")
-                }
+                Button(onClick = {
+                    val currentKm = selectedKm.toIntOrNull() ?: 0
+                    if (currentKm >= 5) selectedKm = (currentKm - 5).toString()
+                    kmError = false
+                }, modifier = Modifier.size(48.dp)) { Text("-") }
                 OutlinedTextField(
                     value = selectedKm,
-                    onValueChange = { newValue ->
-                        if (newValue.all { it.isDigit() } || newValue.isEmpty()) {
-                            selectedKm = newValue
-                        }
-                    },
+                    onValueChange = { if (it.all { char -> char.isDigit() } || it.isEmpty()) { selectedKm = it; kmError = false } },
                     label = { Text("Введите км") },
                     modifier = Modifier.weight(1f),
                     keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
@@ -191,32 +131,25 @@ fun SurveyScreen(
                         placeholderColor = Color.Black
                     )
                 )
-                Button(
-                    onClick = {
-                        val currentKm = selectedKm.toIntOrNull() ?: 0
-                        selectedKm = (currentKm + 5).toString()
-                    },
-                    modifier = Modifier.size(48.dp)
-                ) {
-                    Text("+")
-                }
+                Button(onClick = {
+                    val currentKm = selectedKm.toIntOrNull() ?: 0
+                    selectedKm = (currentKm + 5).toString()
+                    kmError = false
+                }, modifier = Modifier.size(48.dp)) { Text("+") }
+            }
+            if (kmError) {
+                Text("Заполните поле", color = Color.Red, style = MaterialTheme.typography.caption, modifier = Modifier.padding(start = 56.dp))
             }
 
-// 3. Поле для выбора марки
+            // Марка автомобиля
             Text("Марка автомобиля")
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                verticalAlignment = Alignment.CenterVertically
-            ) {
+            Row(modifier = Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
                 OutlinedTextField(
                     value = selectedBrand,
-                    onValueChange = { selectedBrand = it }, // Разрешаем ручной ввод
+                    onValueChange = { selectedBrand = it; brandError = false },
                     label = { Text("Введите или выберите марку") },
-                    modifier = Modifier.weight(1f), // Поле занимает доступное пространство
-                    keyboardOptions = KeyboardOptions(
-                        capitalization = KeyboardCapitalization.Words,
-                        keyboardType = KeyboardType.Text
-                    ),
+                    modifier = Modifier.weight(1f),
+                    keyboardOptions = KeyboardOptions(capitalization = KeyboardCapitalization.Words, keyboardType = KeyboardType.Text),
                     colors = TextFieldDefaults.outlinedTextFieldColors(
                         focusedBorderColor = getColorFromResources(R.color.main_color),
                         unfocusedBorderColor = getColorFromResources(R.color.main_color),
@@ -227,48 +160,56 @@ fun SurveyScreen(
                 )
                 Box {
                     IconButton(onClick = { brandDropdownExpanded = true }) {
-                        Icon(
-                            imageVector = Icons.Default.ArrowDropDown, // Иконка стрелки вниз
-                            contentDescription = "Открыть список марок",
-                            tint = getColorFromResources(R.color.main_color)
-                        )
-                        DropdownMenu(
-                            expanded = brandDropdownExpanded,
-                            onDismissRequest = { brandDropdownExpanded = false },
-                            modifier = Modifier
-                                .width(IntrinsicSize.Min) // Ширина подстраивается под содержимое
-                                .heightIn(max = 200.dp) // Ограничение высоты
-                        ) {
-                            val hardcodedBrands = listOf("Lada", "Toyota", "Audi", "BMW", "Ford")
-                            hardcodedBrands.forEach { brand ->
-                                DropdownMenuItem(onClick = {
-                                    selectedBrand = brand
-                                    selectedModel = brandModels[brand]?.first() ?: ""
-                                    brandDropdownExpanded = false
-                                }) {
-                                    Text(brand)
-                                }
+                        Icon(Icons.Default.ArrowDropDown, "Открыть список марок", tint = getColorFromResources(R.color.main_color))
+                    }
+                    DropdownMenu(
+                        expanded = brandDropdownExpanded,
+                        onDismissRequest = { brandDropdownExpanded = false },
+                        modifier = Modifier.heightIn(max = 200.dp)
+                    ) {
+                        if (brands.size > 10) {
+                            OutlinedTextField(
+                                value = brandSearchQuery,
+                                onValueChange = { brandSearchQuery = it },
+                                label = { Text("Поиск марки") },
+                                modifier = Modifier.fillMaxWidth().padding(8.dp),
+                                colors = TextFieldDefaults.outlinedTextFieldColors(
+                                    focusedBorderColor = getColorFromResources(R.color.main_color),
+                                    unfocusedBorderColor = getColorFromResources(R.color.main_color),
+                                    focusedLabelColor = Color.Black,
+                                    unfocusedLabelColor = Color.Black,
+                                    placeholderColor = Color.Black
+                                )
+                            )
+                        }
+                        val filteredBrands = brands.filter { it.contains(brandSearchQuery, ignoreCase = true) }
+                        filteredBrands.forEach { brand ->
+                            DropdownMenuItem(onClick = {
+                                selectedBrand = brand
+                                selectedModel = CarData.getModelsForBrand(brand).first()
+                                brandSearchQuery = ""
+                                brandDropdownExpanded = false
+                                brandError = false
+                            }) {
+                                Text(brand)
                             }
                         }
                     }
                 }
             }
+            if (brandError) {
+                Text("Заполните поле", color = Color.Red, style = MaterialTheme.typography.caption)
+            }
 
-            // 4. Поле для выбора модели
+            // Модель автомобиля
             Text("Модель автомобиля")
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                verticalAlignment = Alignment.CenterVertically
-            ) {
+            Row(modifier = Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
                 OutlinedTextField(
                     value = selectedModel,
-                    onValueChange = { selectedModel = it }, // Разрешаем ручной ввод
+                    onValueChange = { selectedModel = it; modelError = false },
                     label = { Text("Введите или выберите модель") },
-                    modifier = Modifier.weight(1f), // Поле занимает доступное пространство
-                    keyboardOptions = KeyboardOptions(
-                        capitalization = KeyboardCapitalization.Words,
-                        keyboardType = KeyboardType.Ascii, // Ограничиваем ввод ASCII-символами (английская раскладка)
-                    ),
+                    modifier = Modifier.weight(1f),
+                    keyboardOptions = KeyboardOptions(capitalization = KeyboardCapitalization.Words, keyboardType = KeyboardType.Ascii),
                     colors = TextFieldDefaults.outlinedTextFieldColors(
                         focusedBorderColor = getColorFromResources(R.color.main_color),
                         unfocusedBorderColor = getColorFromResources(R.color.main_color),
@@ -279,54 +220,52 @@ fun SurveyScreen(
                 )
                 Box {
                     IconButton(onClick = { modelDropdownExpanded = true }) {
-                        Icon(
-                            imageVector = Icons.Default.ArrowDropDown, // Иконка стрелки вниз
-                            contentDescription = "Открыть список моделей",
-                            tint = getColorFromResources(R.color.main_color)
-                        )
-
-                        DropdownMenu(
-                            expanded = modelDropdownExpanded,
-                            onDismissRequest = { modelDropdownExpanded = false },
-                            modifier = Modifier
-                                .width(IntrinsicSize.Min) // Ширина подстраивается под содержимое
-                                .heightIn(max = 200.dp) // Ограничение высоты
-                        ) {
-                            // Захардкоженные модели для каждой марки
-                            val hardcodedModels = when (selectedBrand) {
-                                "Lada" -> listOf("Vesta", "Granta", "Niva", "Kalina", "Priora")
-                                "Toyota" -> listOf(
-                                    "Corolla",
-                                    "Camry",
-                                    "RAV4",
-                                    "Prius",
-                                    "Land Cruiser"
+                        Icon(Icons.Default.ArrowDropDown, "Открыть список моделей", tint = getColorFromResources(R.color.main_color))
+                    }
+                    DropdownMenu(
+                        expanded = modelDropdownExpanded,
+                        onDismissRequest = { modelDropdownExpanded = false },
+                        modifier = Modifier.heightIn(max = 200.dp)
+                    ) {
+                        if (models.size > 10) {
+                            OutlinedTextField(
+                                value = modelSearchQuery,
+                                onValueChange = { modelSearchQuery = it },
+                                label = { Text("Поиск модели") },
+                                modifier = Modifier.fillMaxWidth().padding(8.dp),
+                                colors = TextFieldDefaults.outlinedTextFieldColors(
+                                    focusedBorderColor = getColorFromResources(R.color.main_color),
+                                    unfocusedBorderColor = getColorFromResources(R.color.main_color),
+                                    focusedLabelColor = Color.Black,
+                                    unfocusedLabelColor = Color.Black,
+                                    placeholderColor = Color.Black
                                 )
-
-                                "Audi" -> listOf("A3", "A4", "Q5", "A6", "Q7")
-                                "BMW" -> listOf("3 Series", "5 Series", "X3", "X5", "7 Series")
-                                "Ford" -> listOf("Focus", "Fiesta", "Explorer", "Mustang", "F-150")
-                                else -> listOf() // Пустой список для пользовательских марок
-                            }
-                            hardcodedModels.forEach { model ->
-                                DropdownMenuItem(onClick = {
-                                    selectedModel = model
-                                    modelDropdownExpanded = false
-                                }) {
-                                    Text(model)
-                                }
+                            )
+                        }
+                        val filteredModels = models.filter { it.contains(modelSearchQuery, ignoreCase = true) }
+                        filteredModels.forEach { model ->
+                            DropdownMenuItem(onClick = {
+                                selectedModel = model
+                                modelSearchQuery = ""
+                                modelDropdownExpanded = false
+                                modelError = false
+                            }) {
+                                Text(model)
                             }
                         }
                     }
                 }
             }
+            if (modelError) {
+                Text("Заполните поле", color = Color.Red, style = MaterialTheme.typography.caption)
+            }
 
-            // 5. Поле для выбора года выпуска
+            // Год выпуска
             Text("Год выпуска")
             Box {
                 OutlinedTextField(
                     value = year,
-                    onValueChange = {}, // Пустая функция, так как поле только для чтения
+                    onValueChange = {},
                     readOnly = true,
                     label = { Text("Выберите год") },
                     modifier = Modifier.fillMaxWidth(),
@@ -337,58 +276,47 @@ fun SurveyScreen(
                         unfocusedLabelColor = Color.Black,
                         placeholderColor = Color.Black
                     ),
-                    interactionSource = remember { MutableInteractionSource() }
-                        .also { interactionSource ->
-                            LaunchedEffect(interactionSource) {
-                                interactionSource.interactions.collect { interaction ->
-                                    if (interaction is PressInteraction.Release) {
-                                        yearDropdownExpanded = true
-                                    }
-                                }
-                            }
+                    interactionSource = remember { MutableInteractionSource() }.also { interactionSource ->
+                        LaunchedEffect(interactionSource) {
+                            interactionSource.interactions.collect { if (it is PressInteraction.Release) yearDropdownExpanded = true }
                         }
+                    }
                 )
                 DropdownMenu(
                     expanded = yearDropdownExpanded,
                     onDismissRequest = { yearDropdownExpanded = false },
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .heightIn(max = 200.dp) // Ограничение максимальной высоты до 200dp
+                    modifier = Modifier.fillMaxWidth().heightIn(max = 200.dp)
                 ) {
                     years.forEach { yearOption ->
                         DropdownMenuItem(onClick = {
                             year = yearOption
                             yearDropdownExpanded = false
+                            yearError = false
                         }) {
                             Text(yearOption)
                         }
                     }
                 }
             }
+            if (yearError) {
+                Text("Заполните поле", color = Color.Red, style = MaterialTheme.typography.caption)
+            }
 
-            // 6. Поле для текущего пробега с шагом +1000
+            // Текущий пробег
             Text("Текущий пробег")
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.spacedBy(8.dp),
                 verticalAlignment = Alignment.CenterVertically
             ) {
-                Button(
-                    onClick = {
-                        val currentMileage = mileage.toIntOrNull() ?: 0
-                        if (currentMileage >= 1000) mileage = (currentMileage - 1000).toString()
-                    },
-                    modifier = Modifier.size(48.dp)
-                ) {
-                    Text("-")
-                }
+                Button(onClick = {
+                    val currentMileage = mileage.toIntOrNull() ?: 0
+                    if (currentMileage >= 1000) mileage = (currentMileage - 1000).toString()
+                    mileageError = false
+                }, modifier = Modifier.size(48.dp)) { Text("-") }
                 OutlinedTextField(
                     value = mileage,
-                    onValueChange = { newValue ->
-                        if (newValue.all { it.isDigit() } || newValue.isEmpty()) {
-                            mileage = newValue
-                        }
-                    },
+                    onValueChange = { if (it.all { char -> char.isDigit() } || it.isEmpty()) { mileage = it; mileageError = false } },
                     label = { Text("Введите пробег (км)") },
                     modifier = Modifier.weight(1f),
                     keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
@@ -400,28 +328,53 @@ fun SurveyScreen(
                         placeholderColor = Color.Black
                     )
                 )
-                Button(
-                    onClick = {
-                        val currentMileage = mileage.toIntOrNull() ?: 0
-                        mileage = (currentMileage + 1000).toString()
-                    },
-                    modifier = Modifier.size(48.dp)
+                Button(onClick = {
+                    val currentMileage = mileage.toIntOrNull() ?: 0
+                    mileage = (currentMileage + 1000).toString()
+                    mileageError = false
+                }, modifier = Modifier.size(48.dp)) { Text("+") }
+            }
+            if (mileageError) {
+                Text("Заполните поле", color = Color.Red, style = MaterialTheme.typography.caption, modifier = Modifier.padding(start = 56.dp))
+            }
+
+            // Проверка, является ли рекомендация общей
+            val isCustomCar = CarData.getRecommendations(selectedBrand, selectedModel) == CarData.getRecommendations("Custom", "Custom")
+            if (isCustomCar) {
+                Text(
+                    text = "Внимание - Вы выбрали свой вариант машины, рекомендации будут общего характера",
+                    style = MaterialTheme.typography.body2,
+                    color = Color.Gray,
+                    modifier = Modifier.padding(top = 8.dp)
+                )
+            }
+            // Рекомендации
+
+            Surface(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(top = 8.dp),
+                color = getColorFromResources(R.color.main_color),
+                shape = RoundedCornerShape(8.dp) // Закругление углов
+            ) {
+                Column(
+                    modifier = Modifier.padding(16.dp),
+                    verticalArrangement = Arrangement.spacedBy(4.dp)
                 ) {
-                    Text("+")
+                    val recommendation = CarData.getRecommendations(selectedBrand, selectedModel)
+                    Text(
+                        text = "Рекомендации по обслуживанию:",
+                        style = MaterialTheme.typography.subtitle1
+                    )
+                    Text("Замена масла: каждые ${recommendation.oilChangeIntervalKm} км")
+                    Text("Полная проверка: каждые ${recommendation.fullInspectionIntervalKm} км")
+                    Text("Ротация шин: каждые ${recommendation.tireRotationIntervalKm} км")
+                    Text("Проверка тормозов: каждые ${recommendation.brakeCheckIntervalKm} км")
                 }
             }
 
-            // Уведомительный текст перед кнопками
-            Text(
-                text = "Внимание - При выборе своих вариантов, рекомендации будут общего характера",
-                style = MaterialTheme.typography.body2, // Мелкий текст для уведомления
-                color = Color.Yellow, // Серый цвет для ненавязчивости
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(top = 8.dp)
-            )
 
-// 7. Кнопки "Закрыть" и "Сохранить"
+            // Кнопки
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -429,9 +382,7 @@ fun SurveyScreen(
                 horizontalArrangement = Arrangement.SpaceBetween
             ) {
                 Button(
-                    onClick = {
-                        navController.popBackStack() // Возврат на предыдущий экран
-                    },
+                    onClick = { navController.popBackStack() },
                     modifier = Modifier.weight(1f),
                     colors = ButtonDefaults.buttonColors(backgroundColor = MaterialTheme.colors.error)
                 ) {
@@ -440,12 +391,15 @@ fun SurveyScreen(
                 Spacer(modifier = Modifier.width(16.dp))
                 Button(
                     onClick = {
-                        // Проверка на заполненность полей
-                        if (name.isNotEmpty() && selectedKm.isNotEmpty() && selectedBrand.isNotEmpty() &&
-                            selectedModel.isNotEmpty() && year.isNotEmpty() && mileage.isNotEmpty()
-                        ) {
-                            // Сохранение данных в SharedPreferences
-                            val sharedPreferences = context.getSharedPreferences("SurveyPrefs", Context.MODE_PRIVATE)
+                        // Сбрасываем все ошибки перед проверкой
+                        nameError = name.isEmpty()
+                        kmError = selectedKm.isEmpty()
+                        brandError = selectedBrand.isEmpty()
+                        modelError = selectedModel.isEmpty()
+                        yearError = year.isEmpty()
+                        mileageError = mileage.isEmpty()
+
+                        if (!nameError && !kmError && !brandError && !modelError && !yearError && !mileageError) {
                             with(sharedPreferences.edit()) {
                                 putString("name", name)
                                 putString("avgKm", selectedKm)
@@ -453,19 +407,11 @@ fun SurveyScreen(
                                 putString("model", selectedModel)
                                 putString("year", year)
                                 putString("mileage", mileage)
-                                apply() // Асинхронное сохранение
+                                apply()
                             }
-                            // Обновление состояния
-                            surveyDataState.value = SurveyData(
-                                name,
-                                selectedKm,
-                                selectedBrand,
-                                selectedModel,
-                                year,
-                                mileage
-                            )
+                            surveyDataState.value = SurveyData(name, selectedKm, selectedBrand, selectedModel, year, mileage)
                             Toast.makeText(context, "Данные сохранены", Toast.LENGTH_SHORT).show()
-                            navController.popBackStack() // Возврат на предыдущий экран после сохранения
+                            navController.popBackStack()
                         } else {
                             Toast.makeText(context, "Заполните все поля", Toast.LENGTH_SHORT).show()
                         }
