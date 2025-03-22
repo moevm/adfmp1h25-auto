@@ -168,7 +168,7 @@ fun MyApp() {
             startDestination = Screen.Home.route,
             modifier = Modifier.padding(innerPadding)
         ) {
-            composable(Screen.Home.route) { HomeScreen(navController, remindersState.value, maintenanceLogsState.value) }
+            composable(Screen.Home.route) { HomeScreen(navController, remindersState, maintenanceLogsState.value, surveyDataState) }
             composable(Screen.Reminders.route) { ReminderScreen(navController, remindersState) }
             composable(Screen.Maintenance.route) { MaintenanceScreen(navController, maintenanceLogsState) }
             composable(SURVEY_ROUTE) { SurveyScreen(navController, surveyDataState) }
