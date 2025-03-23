@@ -41,7 +41,8 @@ fun HomeScreen(
     navController: NavHostController,
     remindersState: MutableState<List<Reminder>>,
     maintenanceLogs: List<MaintenanceLog>,
-    surveyDataState: MutableState<SurveyData?>
+    surveyDataState: MutableState<SurveyData?>,
+    completedRemindersState: MutableState<List<Pair<String, Int>>> // Добавляем список выполненных (title, mileage)
 ) {
     var showInfo by remember { mutableStateOf(false) }
     if (showInfo) {
@@ -50,6 +51,7 @@ fun HomeScreen(
 
     val formatter = DateTimeFormatter.ofPattern("dd.MM.yyyy")
     val reminders = remindersState.value
+    val completedReminders = completedRemindersState.value
     val nearestReminder = reminders.minByOrNull { LocalDate.parse(it.repairDate, formatter) }
     val lastCheck = maintenanceLogs.maxByOrNull { LocalDate.parse(it.date, formatter) }
 
@@ -73,8 +75,11 @@ fun HomeScreen(
         ).forEach { (title, interval) ->
             // Вычисляем ближайший следующий интервал обслуживания
             val nextServiceMileage = ((currentMileage / interval) + 1) * interval
-            // Проверяем, попадает ли он в диапазон следующего месяца
-            if (nextServiceMileage in (currentMileage + 1)..nextMonthMileage && title !in existingTitles) {
+            // Проверяем, попадает ли он в диапазон следующего месяца и не выполнен ли ранее
+            val isCompleted = completedReminders.any { it.first == title && it.second == nextServiceMileage }
+            if (nextServiceMileage in (currentMileage + 1)..nextMonthMileage &&
+                title !in existingTitles &&
+                !isCompleted) {
                 val dueDate = LocalDate.now().plusDays(30).format(formatter) // Срок — 30 дней
                 newReminders.add(
                     Reminder(

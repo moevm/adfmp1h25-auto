@@ -28,7 +28,8 @@ import java.util.Locale
 const val SURVEY_ROUTE = "survey"
 const val PREFS_NAME = "ReminderPrefs"
 const val KEY_REMINDERS = "reminders"
-const val KEY_MAINTENANCE_LOGS = "maintenance_logs" // Новый ключ для MaintenanceScreen
+const val KEY_MAINTENANCE_LOGS = "maintenance_logs"
+const val KEY_COMPLETED_REMINDERS = "completed_reminders" // Новый ключ для выполненных напоминаний
 
 // Функция для преобразования даты из формата гггг-мм-дд в дд.мм.гггг
 fun convertToRussianDateFormat(dateStr: String): String {
@@ -158,6 +159,32 @@ fun MyApp() {
         saveMaintenanceLogs(maintenanceLogsState.value)
     }
 
+    // Загружаем выполненные напоминания из SharedPreferences или используем пустой список
+    val savedCompletedRemindersJson = prefs.getString(KEY_COMPLETED_REMINDERS, null)
+    val completedRemindersState = remember {
+        mutableStateOf<List<Pair<String, Int>>>(
+            if (savedCompletedRemindersJson != null) {
+                val type = object : TypeToken<List<Pair<String, Int>>>() {}.type
+                gson.fromJson(savedCompletedRemindersJson, type) ?: emptyList()
+            } else {
+                emptyList()
+            }
+        )
+    }
+
+    // Функция для сохранения выполненных напоминаний в SharedPreferences
+    fun saveCompletedReminders(completedReminders: List<Pair<String, Int>>) {
+        with(prefs.edit()) {
+            putString(KEY_COMPLETED_REMINDERS, gson.toJson(completedReminders))
+            apply()
+        }
+    }
+
+    // Сохраняем выполненные напоминания при каждом изменении completedRemindersState
+    LaunchedEffect(completedRemindersState.value) {
+        saveCompletedReminders(completedRemindersState.value)
+    }
+
     val surveyDataState = remember { mutableStateOf<SurveyData?>(null) }
 
     Scaffold(
@@ -168,8 +195,12 @@ fun MyApp() {
             startDestination = Screen.Home.route,
             modifier = Modifier.padding(innerPadding)
         ) {
-            composable(Screen.Home.route) { HomeScreen(navController, remindersState, maintenanceLogsState.value, surveyDataState) }
-            composable(Screen.Reminders.route) { ReminderScreen(navController, remindersState) }
+            composable(Screen.Home.route) {
+                HomeScreen(navController, remindersState, maintenanceLogsState.value, surveyDataState, completedRemindersState)
+            }
+            composable(Screen.Reminders.route) {
+                ReminderScreen(navController, remindersState, surveyDataState, completedRemindersState)
+            }
             composable(Screen.Maintenance.route) { MaintenanceScreen(navController, maintenanceLogsState) }
             composable(SURVEY_ROUTE) { SurveyScreen(navController, surveyDataState) }
         }

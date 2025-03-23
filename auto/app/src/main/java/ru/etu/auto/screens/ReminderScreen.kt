@@ -33,7 +33,9 @@ import androidx.navigation.NavHostController
 import ru.etu.auto.components.CustomTopBar
 import ru.etu.auto.components.DateInputField
 import ru.etu.auto.components.InfoDialog
+import ru.etu.auto.data.CarData
 import ru.etu.auto.models.Reminder
+import ru.etu.auto.models.SurveyData
 import ru.etu.auto.shared.getColorFromResources
 import kotlinx.coroutines.launch
 import ru.etu.auto.R
@@ -44,7 +46,9 @@ import java.time.temporal.ChronoUnit
 @Composable
 fun ReminderScreen(
     navController: NavHostController,
-    remindersState: MutableState<List<Reminder>>
+    remindersState: MutableState<List<Reminder>>,
+    surveyDataState: MutableState<SurveyData?>, // Добавляем для расчёта интервалов
+    completedRemindersState: MutableState<List<Pair<String, Int>>> // Добавляем для выполненных напоминаний
 ) {
     var showAddCard by remember { mutableStateOf(false) }
     var showDetailDialog by remember { mutableStateOf(false) }
@@ -259,11 +263,9 @@ fun ReminderScreen(
                                 var mileage by remember { mutableStateOf("") }
                                 var description by remember { mutableStateOf("") }
 
-                                // Состояния для ошибок валидации
                                 var titleError by remember { mutableStateOf(false) }
                                 var dateError by remember { mutableStateOf(false) }
 
-                                // Функция валидации и добавления
                                 fun validateAndAdd() {
                                     titleError = title.isEmpty()
                                     dateError = repairDate.isEmpty()
@@ -284,7 +286,7 @@ fun ReminderScreen(
                                     value = title,
                                     onValueChange = {
                                         title = it
-                                        titleError = false // Убираем ошибку при вводе
+                                        titleError = false
                                     },
                                     label = { Text("Заголовок") },
                                     keyboardOptions = KeyboardOptions(
@@ -321,7 +323,7 @@ fun ReminderScreen(
                                     modifier = Modifier.fillMaxWidth().padding(top = 4.dp),
                                     onDateSelected = {
                                         repairDate = it
-                                        dateError = false // Убираем ошибку при выборе даты
+                                        dateError = false
                                     }
                                 )
                                 if (dateError) {
@@ -542,7 +544,26 @@ fun ReminderScreen(
                 ) {
                     TextButton(
                         onClick = {
-                            remindersState.value = remindersState.value.filter { it != selectedReminder }
+                            // Удаляем напоминание и добавляем в completedReminders
+                            val reminder = selectedReminder!!
+                            val surveyData = surveyDataState.value
+                            if (surveyData != null) {
+                                val recommendation = CarData.getRecommendations(surveyData.brand, surveyData.model)
+                                val interval = when (reminder.title) {
+                                    "Замена масла" -> recommendation.oilChangeIntervalKm
+                                    "Полная проверка" -> recommendation.fullInspectionIntervalKm
+                                    "Ротация шин" -> recommendation.tireRotationIntervalKm
+                                    "Проверка тормозов" -> recommendation.brakeCheckIntervalKm
+                                    else -> 0 // Для пользовательских напоминаний считаем выполненным без интервала
+                                }
+                                val nextServiceMileage = if (interval > 0) {
+                                    ((reminder.mileage / interval) + 1) * interval
+                                } else {
+                                    reminder.mileage // Если интервал неизвестен, используем текущий пробег
+                                }
+                                completedRemindersState.value = completedRemindersState.value + Pair(reminder.title, nextServiceMileage)
+                            }
+                            remindersState.value = remindersState.value.filter { it != reminder }
                             showDetailDialog = false
                         }
                     ) {
@@ -561,7 +582,6 @@ fun ReminderScreen(
             title = { Text("Фильтрация") },
             text = {
                 Column {
-                    // Создаём FocusRequester для каждого поля
                     val minMileageFocusRequester = remember { FocusRequester() }
                     val maxMileageFocusRequester = remember { FocusRequester() }
                     val focusManager = LocalFocusManager.current
@@ -593,13 +613,11 @@ fun ReminderScreen(
                             imeAction = ImeAction.Next
                         ),
                         keyboardActions = KeyboardActions(
-                            onNext = {
-                                maxMileageFocusRequester.requestFocus() // Явно передаём фокус следующему полю
-                            }
+                            onNext = { maxMileageFocusRequester.requestFocus() }
                         ),
                         modifier = Modifier
                             .fillMaxWidth()
-                            .focusRequester(minMileageFocusRequester), // Привязываем FocusRequester
+                            .focusRequester(minMileageFocusRequester),
                         colors = TextFieldDefaults.outlinedTextFieldColors(
                             focusedBorderColor = Color(0xFF6495ED).copy(alpha = 0.7f),
                             unfocusedBorderColor = Color(0xFF6495ED).copy(alpha = 0.7f),
@@ -623,13 +641,11 @@ fun ReminderScreen(
                             imeAction = ImeAction.Done
                         ),
                         keyboardActions = KeyboardActions(
-                            onDone = {
-                                focusManager.clearFocus() // Закрываем клавиатуру
-                            }
+                            onDone = { focusManager.clearFocus() }
                         ),
                         modifier = Modifier
                             .fillMaxWidth()
-                            .focusRequester(maxMileageFocusRequester), // Привязываем FocusRequester
+                            .focusRequester(maxMileageFocusRequester),
                         colors = TextFieldDefaults.outlinedTextFieldColors(
                             focusedBorderColor = Color(0xFF6495ED).copy(alpha = 0.7f),
                             unfocusedBorderColor = Color(0xFF6495ED).copy(alpha = 0.7f),
