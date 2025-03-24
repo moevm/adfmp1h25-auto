@@ -47,6 +47,7 @@ fun MaintenanceScreen(
     var showFilterDialog by remember { mutableStateOf(false) }
     var selectedLog by remember { mutableStateOf<MaintenanceLog?>(null) }
     var showDetailDialog by remember { mutableStateOf(false) }
+    var showDeleteConfirmation by remember { mutableStateOf(false) } // Новое состояние для диалога подтверждения
 
     var tempFilterWorkType by remember { mutableStateOf("") }
     var tempFilterStartDate by remember { mutableStateOf("") }
@@ -255,7 +256,6 @@ fun MaintenanceScreen(
                                 var newCost by remember { mutableStateOf("") }
                                 var expanded by remember { mutableStateOf(false) }
 
-                                // Состояния для ошибок валидации
                                 var nameError by remember { mutableStateOf(false) }
                                 var workTypeError by remember { mutableStateOf(false) }
                                 var dateError by remember { mutableStateOf(false) }
@@ -263,7 +263,6 @@ fun MaintenanceScreen(
 
                                 val workTypeOptions = listOf("Замена", "Покупка", "Ремонт")
 
-                                // Функция валидации и добавления
                                 fun validateAndAdd() {
                                     nameError = newName.isEmpty()
                                     workTypeError = newWorkType.isEmpty()
@@ -280,7 +279,7 @@ fun MaintenanceScreen(
                                     value = newName,
                                     onValueChange = {
                                         newName = it
-                                        nameError = false // Убираем ошибку при вводе
+                                        nameError = false
                                     },
                                     label = { Text("Название") },
                                     modifier = Modifier.fillMaxWidth(),
@@ -323,7 +322,7 @@ fun MaintenanceScreen(
                                             value = newWorkType,
                                             onValueChange = {
                                                 newWorkType = it
-                                                workTypeError = false // Убираем ошибку при вводе
+                                                workTypeError = false
                                             },
                                             label = { Text("Тип работ") },
                                             readOnly = true,
@@ -361,7 +360,7 @@ fun MaintenanceScreen(
                                                 DropdownMenuItem(
                                                     onClick = {
                                                         newWorkType = option
-                                                        workTypeError = false // Убираем ошибку при выборе
+                                                        workTypeError = false
                                                         expanded = false
                                                         focusManager.moveFocus(FocusDirection.Down)
                                                     },
@@ -386,7 +385,7 @@ fun MaintenanceScreen(
                                     date = newDate,
                                     onDateSelected = {
                                         newDate = it
-                                        dateError = false // Убираем ошибку при выборе даты
+                                        dateError = false
                                     },
                                     modifier = Modifier.fillMaxWidth()
                                 )
@@ -405,7 +404,7 @@ fun MaintenanceScreen(
                                     onValueChange = {
                                         if (it.all { it.isDigit() || it == '.' } || it.isEmpty()) {
                                             newCost = it
-                                            costError = false // Убираем ошибку при вводе
+                                            costError = false
                                         }
                                     },
                                     label = { Text("Стоимость (руб)") },
@@ -536,6 +535,7 @@ fun MaintenanceScreen(
         }
     }
 
+    // Диалог с подробностями записи
     if (showDetailDialog && selectedLog != null) {
         AlertDialog(
             onDismissRequest = { showDetailDialog = false },
@@ -562,8 +562,7 @@ fun MaintenanceScreen(
                 ) {
                     TextButton(
                         onClick = {
-                            logsState.value = logsState.value.filter { it != selectedLog }
-                            showDetailDialog = false
+                            showDeleteConfirmation = true // Показываем диалог подтверждения вместо немедленного удаления
                         }
                     ) {
                         Text("Удалить", color = Color.Red)
@@ -576,6 +575,39 @@ fun MaintenanceScreen(
         )
     }
 
+    // Диалог подтверждения удаления
+    if (showDeleteConfirmation && selectedLog != null) {
+        AlertDialog(
+            onDismissRequest = { showDeleteConfirmation = false },
+            title = { Text("Подтверждение удаления") },
+            text = { Text("Вы уверены, что хотите удалить запись \"${selectedLog!!.name}\"?") },
+            buttons = {
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(8.dp),
+                    horizontalArrangement = Arrangement.SpaceBetween
+                ) {
+                    TextButton(
+                        onClick = {
+                            logsState.value = logsState.value.filter { it != selectedLog } // Удаляем запись
+                            showDeleteConfirmation = false
+                            showDetailDialog = false // Закрываем оба диалога
+                        }
+                    ) {
+                        Text("Да", color = Color.Red)
+                    }
+                    TextButton(
+                        onClick = { showDeleteConfirmation = false } // Просто закрываем диалог подтверждения
+                    ) {
+                        Text("Нет", color = Color.Gray)
+                    }
+                }
+            }
+        )
+    }
+
+    // Диалог фильтрации
     if (showFilterDialog) {
         AlertDialog(
             onDismissRequest = { showFilterDialog = false },
