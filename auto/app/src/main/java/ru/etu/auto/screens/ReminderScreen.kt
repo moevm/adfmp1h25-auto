@@ -47,13 +47,15 @@ import java.time.temporal.ChronoUnit
 fun ReminderScreen(
     navController: NavHostController,
     remindersState: MutableState<List<Reminder>>,
-    surveyDataState: MutableState<SurveyData?>, // Добавляем для расчёта интервалов
-    completedRemindersState: MutableState<List<Pair<String, Int>>> // Добавляем для выполненных напоминаний
+    surveyDataState: MutableState<SurveyData?>,
+    completedRemindersState: MutableState<List<Pair<String, Int>>>
 ) {
     var showAddCard by remember { mutableStateOf(false) }
     var showDetailDialog by remember { mutableStateOf(false) }
     var selectedReminder by remember { mutableStateOf<Reminder?>(null) }
     var showInfo by remember { mutableStateOf(false) }
+    var showDeleteConfirmation by remember { mutableStateOf(false) } // Новое состояние для диалога подтверждения
+
     if (showInfo) {
         InfoDialog { showInfo = false }
     }
@@ -501,6 +503,7 @@ fun ReminderScreen(
         }
     }
 
+    // Диалог с подробностями напоминания
     if (showDetailDialog && selectedReminder != null) {
         AlertDialog(
             onDismissRequest = { showDetailDialog = false },
@@ -544,6 +547,34 @@ fun ReminderScreen(
                 ) {
                     TextButton(
                         onClick = {
+                            showDeleteConfirmation = true // Показываем диалог подтверждения
+                        }
+                    ) {
+                        Text("Удалить", color = Color.Red)
+                    }
+                    TextButton(onClick = { showDetailDialog = false }) {
+                        Text("Закрыть", color = Color.Gray)
+                    }
+                }
+            }
+        )
+    }
+
+    // Диалог подтверждения удаления
+    if (showDeleteConfirmation && selectedReminder != null) {
+        AlertDialog(
+            onDismissRequest = { showDeleteConfirmation = false },
+            title = { Text("Подтверждение удаления") },
+            text = { Text("Вы уверены, что хотите удалить напоминание \"${selectedReminder!!.title}\"?") },
+            buttons = {
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(8.dp),
+                    horizontalArrangement = Arrangement.SpaceBetween
+                ) {
+                    TextButton(
+                        onClick = {
                             // Удаляем напоминание и добавляем в completedReminders
                             val reminder = selectedReminder!!
                             val surveyData = surveyDataState.value
@@ -564,18 +595,23 @@ fun ReminderScreen(
                                 completedRemindersState.value = completedRemindersState.value + Pair(reminder.title, nextServiceMileage)
                             }
                             remindersState.value = remindersState.value.filter { it != reminder }
-                            showDetailDialog = false
+                            showDeleteConfirmation = false
+                            showDetailDialog = false // Закрываем оба диалога
                         }
                     ) {
-                        Text("Удалить", color = Color.Red)
+                        Text("Да", color = Color.Red)
                     }
-                    TextButton(onClick = { showDetailDialog = false }) {
-                        Text("Закрыть", color = Color.Gray)
+                    TextButton(
+                        onClick = { showDeleteConfirmation = false } // Просто закрываем диалог подтверждения
+                    ) {
+                        Text("Нет", color = Color.Gray)
                     }
                 }
             }
         )
     }
+
+    // Диалог фильтрации
     if (showFilterDialog) {
         AlertDialog(
             onDismissRequest = { showFilterDialog = false },
