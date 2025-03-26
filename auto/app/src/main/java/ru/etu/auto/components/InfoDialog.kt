@@ -1,16 +1,16 @@
 package ru.etu.auto.components
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
-import androidx.compose.material.AlertDialog
-import androidx.compose.material.ButtonDefaults
-import androidx.compose.material.MaterialTheme
-import androidx.compose.material.Text
-import androidx.compose.material.TextButton
+import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -21,22 +21,28 @@ import ru.etu.auto.R
 import ru.etu.auto.shared.getColorFromResources
 
 @Composable
-fun InfoDialog(onDismiss: () -> Unit) {
+fun InfoDialog(
+    onDismiss: () -> Unit,
+    modifier: Modifier = Modifier
+) {
     Box(
-        modifier = Modifier
+        modifier = modifier
             .fillMaxSize()
-            .background(
-                color = getColorFromResources(R.color.sub_main_color).copy(alpha = 0.5f) // Прозрачный синий фон
-            )
+            .background(getColorFromResources(R.color.sub_main_color).copy(alpha = 0.6f))
     ) {
         AlertDialog(
             onDismissRequest = onDismiss,
             modifier = Modifier
                 .align(Alignment.Center)
-                .padding(16.dp),
+                .padding(24.dp)
+                .background(
+                    color = getColorFromResources(R.color.main_color).copy(alpha = 0.95f),
+                    shape = MaterialTheme.shapes.medium
+                ),
             title = {
                 Text(
-                    text = "Авторы:",
+                    text = "Authors",
+                    style = MaterialTheme.typography.headlineSmall,
                     color = Color.White,
                     textAlign = TextAlign.Center,
                     modifier = Modifier.fillMaxWidth()
@@ -46,28 +52,36 @@ fun InfoDialog(onDismiss: () -> Unit) {
                 Column(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .padding(16.dp)
+                        .padding(vertical = 16.dp),
+                    verticalArrangement = Arrangement.spacedBy(8.dp)
                 ) {
-                    Text(text = "Насонов Ярослав", color = Color.White)
-                    Text(text = "Иванов Артур", color = Color.White)
-                    Text(text = "Попандопуло Александр", color = Color.White)
+                    listOf(
+                        "Nasonov Yaroslav",
+                        "Ivanov Artur",
+                        "Popandopulo Alexander"
+                    ).forEach { author ->
+                        Text(
+                            text = author,
+                            style = MaterialTheme.typography.bodyMedium,
+                            color = Color.White
+                        )
+                    }
                 }
             },
-            confirmButton = {
+            buttons = {
                 TextButton(
                     onClick = onDismiss,
                     modifier = Modifier
-                        .align(Alignment.Center)
-                        .padding(top = 16.dp),
-                    colors = ButtonDefaults.buttonColors(
-                        backgroundColor = MaterialTheme.colors.error
-                    )
+                        .fillMaxWidth()
+                        .padding(bottom = 16.dp),
                 ) {
-                    Text("Закрыть", color = Color.White)
+                    Text(
+                        text = "Close",
+                        color = Color.White,
+                        style = MaterialTheme.typography.labelLarge
+                    )
                 }
-            },
-            backgroundColor = Color.Transparent,
-            contentColor = Color.White
+            }
         )
     }
 }
