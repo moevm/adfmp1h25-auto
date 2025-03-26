@@ -2,12 +2,13 @@ package ru.etu.auto.components
 
 import android.app.DatePickerDialog
 import androidx.compose.foundation.clickable
-import androidx.compose.material.OutlinedTextField
-import androidx.compose.material.Text
-import androidx.compose.material.TextFieldDefaults
+import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
@@ -18,46 +19,49 @@ import android.R as AndroidR
 @Composable
 fun DateInputField(
     label: String,
-    date: String,
+    initialDate: String,
     onDateSelected: (String) -> Unit,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    isEnabled: Boolean = true
 ) {
     val context = LocalContext.current
-    val dateState = remember { mutableStateOf(date) }
+    var date by remember { mutableStateOf(initialDate) }
     val formatter = DateTimeFormatter.ofPattern("dd.MM.yyyy")
+    val brandColor = Color(0xFF6495ED)
 
     OutlinedTextField(
-        value = dateState.value,
-        onValueChange = { /* Игнорируем прямой ввод */ },
+        value = date,
+        onValueChange = { /* Read-only field */ },
         label = { Text(label) },
-        colors = TextFieldDefaults.outlinedTextFieldColors(
-            focusedBorderColor = Color(0xFF6495ED).copy(alpha = 0.7f),
-            unfocusedBorderColor = Color(0xFF6495ED).copy(alpha = 0.7f),
-            disabledBorderColor = Color(0xFF6495ED).copy(alpha = 0.7f),
-            errorBorderColor = Color(0xFF6495ED).copy(alpha = 0.7f),
-            focusedLabelColor = Color(0xFF6495ED).copy(alpha = 0.7f),
-            unfocusedLabelColor = Color(0xFF6495ED).copy(alpha = 0.7f),
-            disabledTextColor = Color.White
+        colors = androidx.compose.material3.OutlinedTextFieldDefaults.colors(
+            focusedBorderColor = brandColor.copy(alpha = 0.7f),
+            unfocusedBorderColor = brandColor.copy(alpha = 0.5f),
+            disabledBorderColor = brandColor.copy(alpha = 0.3f),
+            focusedLabelColor = brandColor.copy(alpha = 0.7f),
+            unfocusedLabelColor = brandColor.copy(alpha = 0.5f),
+            disabledLabelColor = brandColor.copy(alpha = 0.3f),
+            disabledTextColor = Color.Gray
         ),
-        modifier = modifier
-            .clickable {
-                val now = LocalDate.now()
-                val datePicker = DatePickerDialog(
+        modifier = modifier.clickable(
+            enabled = isEnabled,
+            onClick = {
+                val currentDate = LocalDate.now()
+                DatePickerDialog(
                     context,
                     AndroidR.style.Theme_Material_Dialog,
                     { _, year, month, dayOfMonth ->
                         val selectedDate = LocalDate.of(year, month + 1, dayOfMonth)
                         val formattedDate = selectedDate.format(formatter)
-                        dateState.value = formattedDate
+                        date = formattedDate
                         onDateSelected(formattedDate)
                     },
-                    now.year,
-                    now.monthValue - 1,
-                    now.dayOfMonth
-                )
-                datePicker.show()
-            },
-        enabled = false,
+                    currentDate.year,
+                    currentDate.monthValue - 1,
+                    currentDate.dayOfMonth
+                ).show()
+            }
+        ),
+        enabled = isEnabled,
         readOnly = true
     )
 }
