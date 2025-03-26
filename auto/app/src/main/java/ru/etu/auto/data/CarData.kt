@@ -3,66 +3,69 @@ package ru.etu.auto.data
 data class CarModel(
     val brand: String,
     val model: String,
-    val oilChangeIntervalKm: Int,        // Интервал замены масла (км)
-    val fullInspectionIntervalKm: Int,   // Интервал полной проверки (км)
-    val tireRotationIntervalKm: Int,     // Интервал ротации шин (км)
-    val brakeCheckIntervalKm: Int        // Интервал проверки тормозов (км)
-)
+    val oilChangeIntervalKm: Int = 10000,        // Default oil change interval (km)
+    val fullInspectionIntervalKm: Int = 30000,   // Default full inspection interval (km)
+    val tireRotationIntervalKm: Int = 10000,     // Default tire rotation interval (km)
+    val brakeCheckIntervalKm: Int = 20000        // Default brake check interval (km)
+) {
+    // Helper property for full display name
+    val fullName: String
+        get() = "$brand $model"
+}
 
 object CarData {
-    val carModels = listOf(
-        // BMW
-        CarModel("BMW", "3 Series", 10000, 30000, 8000, 20000),
-        CarModel("BMW", "5 Series", 10000, 30000, 8000, 20000),
-        CarModel("BMW", "X3", 10000, 30000, 8000, 20000),
-        CarModel("BMW", "X5", 10000, 30000, 8000, 20000),
-        CarModel("BMW", "7 Series", 10000, 30000, 8000, 20000),
+    private val carModels = listOf(
+        // German Manufacturers
+        CarModel("BMW", "3 Series", oilChangeIntervalKm = 10000, fullInspectionIntervalKm = 30000, tireRotationIntervalKm = 8000),
+        CarModel("BMW", "5 Series", oilChangeIntervalKm = 10000, fullInspectionIntervalKm = 30000, tireRotationIntervalKm = 8000),
+        CarModel("BMW", "X3", oilChangeIntervalKm = 10000, fullInspectionIntervalKm = 30000, tireRotationIntervalKm = 8000),
+        CarModel("BMW", "X5", oilChangeIntervalKm = 10000, fullInspectionIntervalKm = 30000, tireRotationIntervalKm = 8000),
+        CarModel("BMW", "7 Series", oilChangeIntervalKm = 10000, fullInspectionIntervalKm = 30000, tireRotationIntervalKm = 8000),
 
-        // Mercedes-Benz
-        CarModel("Mercedes-Benz", "C-Class", 10000, 30000, 10000, 20000),
-        CarModel("Mercedes-Benz", "E-Class", 10000, 30000, 10000, 20000),
-        CarModel("Mercedes-Benz", "S-Class", 10000, 30000, 10000, 20000),
-        CarModel("Mercedes-Benz", "GLC", 10000, 30000, 10000, 20000),
-        CarModel("Mercedes-Benz", "GLE", 10000, 30000, 10000, 20000),
+        CarModel("Mercedes-Benz", "C-Class"),
+        CarModel("Mercedes-Benz", "E-Class"),
+        CarModel("Mercedes-Benz", "S-Class"),
+        CarModel("Mercedes-Benz", "GLC"),
+        CarModel("Mercedes-Benz", "GLE"),
 
-        // Lada
-        CarModel("Lada", "Vesta", 15000, 30000, 10000, 15000),
-        CarModel("Lada", "Granta", 15000, 30000, 10000, 15000),
-        CarModel("Lada", "Niva", 10000, 20000, 8000, 15000),
-        CarModel("Lada", "Kalina", 15000, 30000, 10000, 15000),
-        CarModel("Lada", "Priora", 15000, 30000, 10000, 15000),
+        CarModel("Audi", "A3", oilChangeIntervalKm = 10000, fullInspectionIntervalKm = 30000, tireRotationIntervalKm = 8000),
+        CarModel("Audi", "A4", oilChangeIntervalKm = 10000, fullInspectionIntervalKm = 30000, tireRotationIntervalKm = 8000),
+        CarModel("Audi", "Q5", oilChangeIntervalKm = 10000, fullInspectionIntervalKm = 30000, tireRotationIntervalKm = 8000),
+        CarModel("Audi", "A6", oilChangeIntervalKm = 10000, fullInspectionIntervalKm = 30000, tireRotationIntervalKm = 8000),
+        CarModel("Audi", "Q7", oilChangeIntervalKm = 10000, fullInspectionIntervalKm = 30000, tireRotationIntervalKm = 8000),
 
-        // Toyota
-        CarModel("Toyota", "Corolla", 10000, 40000, 10000, 20000),
-        CarModel("Toyota", "Camry", 10000, 40000, 10000, 20000),
-        CarModel("Toyota", "RAV4", 10000, 40000, 10000, 20000),
-        CarModel("Toyota", "Prius", 10000, 40000, 10000, 20000),
-        CarModel("Toyota", "Land Cruiser", 10000, 40000, 10000, 20000),
+        // Russian Manufacturer
+        CarModel("Lada", "Vesta", oilChangeIntervalKm = 15000, fullInspectionIntervalKm = 30000),
+        CarModel("Lada", "Granta", oilChangeIntervalKm = 15000, fullInspectionIntervalKm = 30000),
+        CarModel("Lada", "Niva", oilChangeIntervalKm = 10000, fullInspectionIntervalKm = 20000, tireRotationIntervalKm = 8000),
+        CarModel("Lada", "Kalina", oilChangeIntervalKm = 15000, fullInspectionIntervalKm = 30000),
+        CarModel("Lada", "Priora", oilChangeIntervalKm = 15000, fullInspectionIntervalKm = 30000),
 
-        // Audi
-        CarModel("Audi", "A3", 10000, 30000, 8000, 20000),
-        CarModel("Audi", "A4", 10000, 30000, 8000, 20000),
-        CarModel("Audi", "Q5", 10000, 30000, 8000, 20000),
-        CarModel("Audi", "A6", 10000, 30000, 8000, 20000),
-        CarModel("Audi", "Q7", 10000, 30000, 8000, 20000)
+        // Japanese Manufacturer
+        CarModel("Toyota", "Corolla", fullInspectionIntervalKm = 40000),
+        CarModel("Toyota", "Camry", fullInspectionIntervalKm = 40000),
+        CarModel("Toyota", "RAV4", fullInspectionIntervalKm = 40000),
+        CarModel("Toyota", "Prius", fullInspectionIntervalKm = 40000),
+        CarModel("Toyota", "Land Cruiser", fullInspectionIntervalKm = 40000)
     )
 
-    // Общие рекомендации для пользовательских марок/моделей
-    private val defaultRecommendations = CarModel(
-        brand = "Custom",
-        model = "Custom",
-        oilChangeIntervalKm = 10000,    // Среднее значение для большинства авто
-        fullInspectionIntervalKm = 30000, // Типичный интервал полной проверки
-        tireRotationIntervalKm = 10000,   // Стандартная рекомендация
-        brakeCheckIntervalKm = 20000      // Средний интервал для тормозов
-    )
+    // Default fallback model
+    private val defaultModel = CarModel(brand = "Unknown", model = "Custom")
 
-    fun getBrands(): List<String> = carModels.map { it.brand }.distinct().sorted()
+    // Grouped access to brands and models
+    private val modelsByBrand = carModels.groupBy { it.brand }
+
+    fun getBrands(): List<String> = modelsByBrand.keys.sorted()
 
     fun getModelsForBrand(brand: String): List<String> =
-        carModels.filter { it.brand == brand }.map { it.model }
+        modelsByBrand[brand]?.map { it.model }?.sorted() ?: emptyList()
 
-    fun getRecommendations(brand: String, model: String): CarModel {
-        return carModels.find { it.brand == brand && it.model == model } ?: defaultRecommendations
-    }
+    fun getCarModel(brand: String, model: String): CarModel =
+        carModels.find { it.brand == brand && it.model == model } ?: defaultModel
+
+    // New utility function to check if a brand exists
+    fun hasBrand(brand: String): Boolean = modelsByBrand.containsKey(brand)
+
+    // New utility function to get all models
+    fun getAllModels(): List<CarModel> = carModels.toList()
 }
