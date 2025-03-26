@@ -1,82 +1,83 @@
 package ru.etu.auto.components
 
 import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.material.Icon
-import androidx.compose.material.IconButton
-import androidx.compose.material.TopAppBar
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.ArrowBack
-import androidx.compose.material.icons.filled.Info
-import androidx.compose.material.icons.filled.Person
+import androidx.compose.material3.CenterAlignedTopAppBar
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.ArrowBack
+import androidx.compose.material.icons.filled.Info
+import androidx.compose.material.icons.filled.Person
 import coil.compose.AsyncImage
 import ru.etu.auto.R
 import ru.etu.auto.shared.getColorFromResources
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun CustomTopBar(
     title: String,
     showBackButton: Boolean = false,
-    onBack: () -> Unit = {},
-    onInfoClick: () -> Unit,
-    onProfileClick: () -> Unit
+    onBackClick: () -> Unit = {},
+    onInfoClick: () -> Unit = {},
+    onProfileClick: () -> Unit = {},
+    modifier: Modifier = Modifier
 ) {
-    TopAppBar(
+    CenterAlignedTopAppBar(
+        modifier = modifier,
+        colors = TopAppBarDefaults.centerAlignedTopAppBarColors(
+            containerColor = getColorFromResources(R.color.main_color),
+            navigationIconContentColor = Color.White,
+            actionIconContentColor = Color.White
+        ),
         title = {
-            Box(modifier = Modifier.fillMaxWidth()) {
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 48.dp) // Prevents overlap with icons
+            ) {
                 AsyncImage(
                     model = R.drawable.logo,
-                    contentDescription = "Логотип",
+                    contentDescription = title,
                     modifier = Modifier
                         .align(Alignment.Center)
-                        .size(200.dp)
+                        .size(150.dp) // Reduced size for better layout
                 )
             }
         },
         navigationIcon = {
             if (showBackButton) {
-                Row {
-                    IconButton(onClick = onBack) {
-                        Icon(
-                            Icons.Default.ArrowBack,
-                            contentDescription = "Назад",
-                            tint = Color.White
-                        )
-                    }
-                    IconButton(onClick = onInfoClick) {
-                        Icon(
-                            Icons.Default.Info,
-                            contentDescription = "Информация",
-                            tint = Color.White
-                        )
-                    }
-                }
-            } else {
-                IconButton(onClick = onInfoClick) {
+                IconButton(onClick = onBackClick) {
                     Icon(
-                        Icons.Default.Info,
-                        contentDescription = "Информация",
-                        tint = Color.White
+                        imageVector = Icons.Default.ArrowBack,
+                        contentDescription = "Back"
                     )
                 }
             }
-        },
-        actions = {
-            IconButton(onClick = { onProfileClick() }) { // Переход сразу при клике на иконку
+            IconButton(onClick = onInfoClick) {
                 Icon(
-                    Icons.Default.Person,
-                    contentDescription = "Профиль",
-                    tint = Color.White
+                    imageVector = Icons.Default.Info,
+                    contentDescription = "Info"
                 )
             }
         },
-        backgroundColor = getColorFromResources(R.color.main_color)
+        actions = {
+            IconButton(onClick = onProfileClick) {
+                Icon(
+                    imageVector = Icons.Default.Person,
+                    contentDescription = "Profile"
+                )
+            }
+        }
     )
 }
